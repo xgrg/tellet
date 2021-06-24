@@ -1,0 +1,41 @@
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link rel="stylesheet" href="{{static_url("css/style.css")}}" />
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+
+<script type="text/javascript" src="{{static_url("js/login.js")}}"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="card card-container">
+            <!-- <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->
+            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
+            <p id="profile-name" class="profile-name-card"></p>
+            <form class="form-signin" method="post">
+                <span id="reauth-email" class="reauth-email"></span>
+                <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
+                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
+
+            </form><!-- /form -->
+            <div style='color:#dc34e6'>{{errormessage}}</div>
+
+        </div><!-- /card-container -->
+    </div><!-- /container -->
+</body>
+</html>
+<script>
+
+$(document).ready(function() {
+       $(".btn-signin").click(function(e) {
+           e.preventDefault();
+
+           console.log($('#username')[0].value)
+           $("form").submit();
+
+       });
+    });
+</script>

@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="description" content="">
+      <meta name="author" content="">
+
+      <title>Tellet</title>
+      <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+      <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+      <link href="css/style.css" rel="stylesheet">
+
+
+   </head>
+   <body>
+     <div class="container">
+       <div class="row">
+
+           <div class="col-md-6">
+
+             <a href="add?to=todo" class="btn btn-danger btn-lg" role="button">
+               <span class="glyphicon glyphicon-shopping-cart"></span> <br/>Add</a>
+               <br><br>
+               {{list}}
+
+               <a href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
+
+       </div>
+
+     </div>
+   </div>
+   <script>
+   $("span.badge-danger").click(function(){
+     console.log($(this).parent().text());
+     $.ajax({
+           type: "POST",
+           url: "/todo",
+           data: {"what": $(this).parent().text(),
+                  "action": "remove"},
+           dataType:'html',
+           success: function(data) {
+              console.log('titi');
+               return true;
+           },
+           error: function(data){
+             console.log(data);
+           }
+
+         });
+   })
+
+   $("span.badge-success").click(function(){
+     console.log($(this).parent().text());
+     $.ajax({
+           type: "POST",
+           url: "/todo",
+           data: {"what": $(this).parent().text(),
+                  "action": "done"},
+           dataType:'html',
+           success: function(data) {
+              console.log('titi');
+               return true;
+           },
+           error: function(data){
+             console.log(data);
+           }
+
+         });
+     })
+ </script>
+
+   </body>
+</html>
