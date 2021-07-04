@@ -1,6 +1,8 @@
 from tellet import handlers as h
 import os.path as op
 import tornado.web
+import json
+import logging as log
 
 DEBUG = True
 
@@ -14,7 +16,18 @@ print(DIRNAME)
 class Application(tornado.web.Application):
     def __init__(self, args, config):
 
-        params = {'fp': args.filepath}
+        fp = args.filepath
+        params = {'fp': fp}
+
+        # If fp does not exist, then create it from empty template
+        if not op.isfile(fp):
+            d = {'shopping': [],
+                 'todo': [],
+                 'log': []}
+            log.warning('File not found. Created %s' % fp)
+            json.dump(d, open(fp, 'w'))
+        else:
+            log.info('Loaded %s' % fp)
 
         handlers = [
             (r"/", h.MainHandler, params),

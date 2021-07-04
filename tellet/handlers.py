@@ -1,5 +1,9 @@
 import tornado.web
 import json
+import difflib
+import pandas as pd
+from datetime import datetime
+import os.path as op
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -29,32 +33,61 @@ class MainHandler(BaseHandler):
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s has just logged in.' % username)
+        import git
+        repo = git.Repo(op.dirname(op.dirname(__file__)))
+        commit = list(repo.iter_commits(max_count=1))[0]
+        dt = datetime.fromtimestamp(commit.committed_date)
+        version = datetime.strftime(dt, '%Y%m%d-%H%M%S')
 
-        self.render("html/index.html")
+        self.render("html/index.html", version=version)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
 
 
-def get_list_html(j):
-    sl = ['''<li class="list-group-item d-flex justify-content-between align-items-center">
+def get_list_html(j, action_label):
+    sl = ['''<li class="list-group-item d-flex justify-content-between
+              align-items-center">
                 %s
                 <span class="badge badge-pill badge-danger">Retirer</span>
-                <span class="badge badge-pill badge-success">Acheté</span>
-              </li>''' % each for each in j]
+                <span class="badge badge-pill badge-success">%s </span>
+              </li>''' % (each, action_label) for each in j]
     list_html = '<div id="itemlist"><ul class="list-group">%s</ul></div>' % ''.join(sl)
     return list_html
 
 
-class ShoppingHandler(BaseHandler):
+class ListHandler():
+    def remove_from_list(self, what, which_list, action):
+        username = str(self.current_user[1:-1], 'utf-8')
+        that_list = json.load(open(self.fp))[which_list]
+
+        matches = difflib.get_close_matches(what, that_list)
+        print(what, that_list, matches)
+        dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
+        j = json.load(open(self.fp))
+
+        if len(matches) == 0:
+            action = 'tried_to_%s' % action
+            res = None
+        else:
+            that_list.remove(matches[0])
+            j[which_list] = that_list
+            res = that_list
+
+        entry = (dt, username, action, what, which_list)
+        j['log'].append(entry)
+        json.dump(j, open(self.fp, 'w'), indent=4)
+        return res
+
+
+class ShoppingHandler(BaseHandler, ListHandler):
     @tornado.web.authenticated
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
 
         print('\n*** %s is shopping.' % username)
         shopping = json.load(open(self.fp))['shopping']
-        sl = get_list_html(shopping)
-
+        sl = get_list_html(shopping, action_label='Acheté')
         self.render("html/shopping.html", list=sl)
 
     def post(self):
@@ -63,23 +96,76 @@ class ShoppingHandler(BaseHandler):
         what = str(self.get_argument("what", "\n")).split('\n')[0]
 
         print((username, action, what))
-        if action == 'remove':
-            shopping = json.load(open(self.fp))['shopping']
-            import difflib
-            matches = difflib.get_close_matches(what, shopping)
-            print(matches)
-            if len(matches) == 0:
-                self.write(json.dumps([False]))
-            else:
-                shopping.remove(matches[0])
-                j = json.load(open(self.fp))
-                j['shopping'] = shopping
-                json.dump(j, open(self.fp, 'w'))
-                if len(shopping) != 0:
-                    sl = get_list_html(shopping)
-                else:
-                    sl = 'La liste est vide. Rien à acheter !'
-                self.write(json.dumps([True, sl]))
+
+        that_list = self.remove_from_list(what, 'shopping', action)
+        is_found = that_list is not None
+        sl = None
+        if is_found:
+            sl = 'La liste est vide. Rien à acheter !'
+            if len(that_list) != 0:
+                sl = get_list_html(that_list, action_label='Acheté')
+
+        self.write(json.dumps([is_found, sl]))
+
+    def initialize(self, **kwargs):
+        _initialize(self, **kwargs)
+
+
+class TodoHandler(BaseHandler, ListHandler):
+    @tornado.web.authenticated
+    def get(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+        print('\n*** %s is todoing.' % username)
+        todo = json.load(open(self.fp))['todo']
+        tl = get_list_html(todo, action_label='Effectué')
+        self.render("html/todo.html", list=tl)
+
+    def post(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+        action = str(self.get_argument("action", ""))
+        what = str(self.get_argument("what", "")).split('\n')[0]
+
+        print((username, action, what))
+        that_list = self.remove_from_list(what, 'todo', action)
+        is_found = that_list is not None
+        sl = None
+        if is_found:
+            sl = 'La liste est vide. Rien à faire !'
+            if len(that_list) != 0:
+                sl = get_list_html(that_list, action_label='Effectué')
+        self.write(json.dumps([is_found, sl]))
+
+    def initialize(self, **kwargs):
+        _initialize(self, **kwargs)
+
+
+class AddHandler(BaseHandler):
+    def add_to_list(self, what, which_list):
+        username = str(self.current_user[1:-1], 'utf-8')
+
+        j = json.load(open(self.fp))
+        that_list = j[which_list]
+        that_list.append(what)
+        j[which_list] = that_list
+
+        dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
+        entry = (dt, username, 'add', what, which_list)
+        j['log'].append(entry)
+
+        json.dump(j, open(self.fp, 'w'), indent=4)
+        return that_list
+
+    @tornado.web.authenticated
+    def post(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+        to = str(self.get_argument("to", ""))
+        what = str(self.get_argument("what", ""))
+
+        print((username, to, what.split('\n')[0]))
+        if to in ['shopping', 'todo']:
+            shopping = self.add_to_list(what, to)
+            sl = get_list_html(shopping, action_label='Acheté')
+            self.write(json.dumps([True, sl]))
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -91,7 +177,16 @@ class StatsHandler(BaseHandler):
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s is stating.' % username)
 
-        self.render("html/stats.html")
+        loglist = json.load(open(self.fp))['log']
+        columns = ['ts', 'who', 'action', 'what', 'where']
+        df = pd.DataFrame(loglist, columns=columns).set_index('ts')
+
+        html = '''
+        <style>
+            .df tbody tr:nth-child(even) { background-color: lightblue; }
+        </style>
+        ''' + df.to_html(classes="df")
+        self.render("html/stats.html", list=html)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -104,49 +199,6 @@ class ReportsHandler(BaseHandler):
         print('\n*** %s is reporting.' % username)
 
         self.render("html/reports.html")
-
-    def initialize(self, **kwargs):
-        _initialize(self, **kwargs)
-
-
-class TodoHandler(BaseHandler):
-    @tornado.web.authenticated
-    def get(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        print('\n*** %s is todoing.' % username)
-        todo = json.load(open(self.fp))['todo']
-        tl = get_list_html(todo)
-        self.render("html/todo.html", list=tl)
-
-    def post(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        action = str(self.get_argument("action", ""))
-        what = str(self.get_argument("what", ""))
-
-        print((username, action, what.split('\n')[0]))
-        if action == 'remove':
-            todo = json.load(open(self.fp))['todo']
-
-    def initialize(self, **kwargs):
-        _initialize(self, **kwargs)
-
-
-class AddHandler(BaseHandler):
-    @tornado.web.authenticated
-    def post(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        to = str(self.get_argument("to", ""))
-        what = str(self.get_argument("what", ""))
-
-        print((username, to, what.split('\n')[0]))
-        if to == 'shopping':
-            j = json.load(open(self.fp))
-            shopping = j['shopping']
-            shopping.append(what)
-            j['shopping'] = shopping
-            json.dump(j, open(self.fp, 'w'))
-            sl = get_list_html(shopping)
-            self.write(json.dumps([True, sl]))
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)

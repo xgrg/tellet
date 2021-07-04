@@ -1,76 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="">
-      <meta name="author" content="">
 
-      <title>Tellet</title>
-      <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-      <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-      <link href="css/style.css" rel="stylesheet">
+<head>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Tellet</title>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <link href="css/style.css" rel="stylesheet">
 
 
-   </head>
-   <body>
-     <div class="container">
-       <div class="row">
+</head>
 
-           <div class="col-md-6">
+<body>
+  <div class="container">
+    <div class="row">
 
-             <a href="add?to=todo" class="btn btn-danger btn-lg" role="button">
-               <span class="glyphicon glyphicon-shopping-cart"></span> <br/>Add</a>
-               <br><br>
-               {{list}}
+      <div class="col-md-6">
 
-               <a href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
+        <a id="addtodo" href="#" class="btn btn-danger btn-lg" role="button">
+          <span class="glyphicon glyphicon-shopping-cart"></span> <br />Add</a>
+        <br><br>
+        {{list}}
 
-       </div>
+        <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
 
-     </div>
-   </div>
-   <script>
-   $("span.badge-danger").click(function(){
-     console.log($(this).parent().text());
-     $.ajax({
-           type: "POST",
-           url: "/todo",
-           data: {"what": $(this).parent().text(),
-                  "action": "remove"},
-           dataType:'html',
-           success: function(data) {
-              console.log('titi');
-               return true;
-           },
-           error: function(data){
-             console.log(data);
-           }
+      </div>
 
-         });
-   })
+    </div>
+  </div>
 
-   $("span.badge-success").click(function(){
-     console.log($(this).parent().text());
-     $.ajax({
-           type: "POST",
-           url: "/todo",
-           data: {"what": $(this).parent().text(),
-                  "action": "done"},
-           dataType:'html',
-           success: function(data) {
-              console.log('titi');
-               return true;
-           },
-           error: function(data){
-             console.log(data);
-           }
+  <!-- Modal window: Item not found (somebody removed it at the same time -->
+  <div id="notfoundModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <p>Item not found.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-         });
-     })
- </script>
+  <!-- Modal window: Adding item to shopping list  -->
+  <div id="todoModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <input id="textbox" input class="form-control" list="whattoadd" name="browser">
+          <datalist id="whattoadd">
+          </datalist>
+        </div>
+        <div class="modal-footer">
+          <button id="addtolist" type="button" class="btn btn-success" data-dismiss="modal">Save</button>
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-   </body>
+  <script>
+  /* When someone clicks on Done */
+  function click_done() {
+    console.log($(this).parent().text());
+    click_badge($(this), '/todo', 'did');
+  }
+
+  /* When someone clicks on Removed */
+  function click_removed() {
+    console.log($(this).parent().text());
+    click_badge($(this), '/todo', 'removed');
+
+  }
+
+  function click_badge(item, url, action){
+    $.ajax({
+      type: "POST", url: url, dataType: 'json',
+      data: {
+        "what": item.parent().text(),
+        "action": action
+      },
+      success: function(data) {
+        console.log(data)
+        if (data[0] == false) {
+          $('#notfoundModal').modal('show');
+          return true;
+        } else {
+          html = data[1];
+          console.log(data)
+          $("div#itemlist").html(html)
+          $("span.badge-danger").click(click_removed);
+          $("span.badge-success").click(click_done)
+          return true;
+        }
+      },
+      error: function(data) {
+        console.log(data);
+      }
+    });
+  }
+
+  $("span.badge-danger").click(click_removed)
+  $("span.badge-success").click(click_done)
+
+    $("a").click(function(e) {
+      id = $(this).attr('id');
+      e.preventDefault();
+
+      /* Clicking on the big Add button */
+      if (id == "addtodo") {
+        console.log(id);
+        options = ['passer aspirateur'];
+        html = '';
+        options.forEach(function(v) {
+          html += '<option value="' + v + '">';
+        });
+        $('datalist#whattoadd').html(html)
+        $('#todoModal').modal('show');
+      }
+    })
+
+    $('a#logout').unbind('click')
+
+    /* Adding to the todo list */
+    $('button#addtolist').click(function() {
+      what = $("input#textbox").val();
+      $.ajax({
+        type: "POST",
+        url: "/add",
+        data: {
+          "what": what,
+          "to": "todo"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data)
+          if (data[0] == false) {
+            $('#notfoundModal').modal('show');
+            return true;
+          } else {
+            html = data[1];
+            console.log(data)
+            $("div#itemlist").html(html)
+            $("span.badge-danger").click(click_removed);
+            return true;
+          }
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    });
+  </script>
+
+</body>
+
 </html>

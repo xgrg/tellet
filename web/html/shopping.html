@@ -34,10 +34,9 @@
     </div>
   </div>
 
+  <!-- Modal window: Item not found (somebody removed it at the same time -->
   <div id="notfoundModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
-
-      <!-- Modal content-->
       <div class="modal-content">
         <div class="modal-header">
           <button type="button" class="close" data-dismiss="modal">&times;</button>
@@ -50,10 +49,10 @@
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>
-
     </div>
   </div>
 
+  <!-- Modal window: Adding item to shopping list  -->
   <div id="buyModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -62,8 +61,7 @@
           <h4 class="modal-title"></h4>
         </div>
         <div class="modal-body">
-
-          <input id="tutu" input class="form-control" list="whattobuy" name="browser">
+          <input id="textbox" input class="form-control" list="whattobuy" name="browser">
           <datalist id="whattobuy">
           </datalist>
         </div>
@@ -72,85 +70,78 @@
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>
-
     </div>
   </div>
 
   <script>
+
+    /* When someone clicks on Bought */
     function click_bought() {
       console.log($(this).parent().text());
-      $.ajax({
-        type: "POST",
-        url: "/shopping",
-        data: {
-          "what": $(this).parent().text(),
-          "action": "buy"
-        },
-        dataType: 'html',
-        success: function(data) {
-          console.log('titi');
-          return true;
-        },
-        error: function(data) {
-          console.log(data);
-        }
+      click_badge($(this), '/shopping', 'bought');
+    }
 
-      });
+    /* When someone clicks on Removed */
+    function click_removed() {
+      console.log($(this).parent().text());
+      click_badge($(this), '/shopping', 'remove');
 
     }
 
-    function click_removed() {
-      console.log($(this).parent().text());
+    function click_badge(item, url, action){
       $.ajax({
-        type: "POST",
-        url: "/shopping",
+        type: "POST", url: url, dataType: 'json',
         data: {
-          "what": $(this).parent().text(),
-          "action": "remove"
+          "what": item.parent().text(),
+          "action": action
         },
-        dataType: 'json',
         success: function(data) {
           console.log(data)
           if (data[0] == false) {
-            console.log('titi');
-            $('#myModal').modal('show');
+            $('#notfoundModal').modal('show');
             return true;
           } else {
             html = data[1];
             console.log(data)
             $("div#itemlist").html(html)
             $("span.badge-danger").click(click_removed);
+            $("span.badge-success").click(click_bought)
             return true;
           }
         },
         error: function(data) {
           console.log(data);
         }
-
       });
     }
 
 
     $("span.badge-danger").click(click_removed)
-    $("span.badge-success").click(click_removed)
+    $("span.badge-success").click(click_bought)
+
+
     $("a").click(function(e) {
       id = $(this).attr('id');
       e.preventDefault();
+
+      /* Clicking on the big Add button */
       if (id == "addshopping") {
         console.log(id);
         options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
         html = '';
-        options.forEach(function(v){ html += '<option value="'+ v + '">';});
+        options.forEach(function(v) {
+          html += '<option value="' + v + '">';
+        });
         $('datalist#whattobuy').html(html)
         $('#buyModal').modal('show');
-
       }
     })
+
     $('a#logout').unbind('click')
 
-
-    $('button#addtobuy').click(function(){
-      what = $("input#tutu").val();
+    /* Adding to the shopping list */
+    $('button#addtobuy').click(function() {
+      what = $("input#textbox").val();
       $.ajax({
         type: "POST",
         url: "/add",
@@ -162,26 +153,23 @@
         success: function(data) {
           console.log(data)
           if (data[0] == false) {
-            console.log('titi');
-            $('#myModal').modal('show');
+            $('#notfoundModal').modal('show');
             return true;
           } else {
             html = data[1];
             console.log(data)
             $("div#itemlist").html(html)
             $("span.badge-danger").click(click_removed);
+            $("span.badge-success").click(click_bought);
+
             return true;
           }
         },
         error: function(data) {
           console.log(data);
         }
-
       });
-
-
     });
-
   </script>
 </body>
 
