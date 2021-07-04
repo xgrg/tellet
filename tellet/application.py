@@ -14,8 +14,7 @@ print(DIRNAME)
 class Application(tornado.web.Application):
     def __init__(self, args, config):
 
-        params = {'config': config,
-                  'fp': args.filepath}
+        params = {'fp': args.filepath}
 
         handlers = [
             (r"/", h.MainHandler, params),
@@ -28,7 +27,7 @@ class Application(tornado.web.Application):
             (r"/auth/logout", h.AuthLogoutHandler)]
 
         s = {
-            "autoreload": False,
+            "autoreload": True,
             "template_path": TEMPLATE_PATH,
             "static_path": STATIC_PATH,
             "debug": DEBUG,

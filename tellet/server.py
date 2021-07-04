@@ -3,9 +3,6 @@ from tornado.options import define
 import argparse
 from tellet import application
 
-import os.path as op
-
-
 import logging as log
 import sys
 
@@ -19,14 +16,7 @@ define("port", default=8890, help="run on the given port", type=int)
 
 
 def main(args):
-    if not op.isfile(args.config):
-        msg = 'Configuration file not found (%s)' % args.config
-        raise FileNotFoundError(msg)
-    import configparser
-    c = configparser.ConfigParser()
-    c.read(op.abspath(args.config))
-    config = dict(c['Settings'])
-    app = application.Application(args, config)
+    app = application.Application(args, config={})
     http_server = tornado.httpserver.HTTPServer(app)
     http_server.listen(args.port)
     t = tornado.ioloop.IOLoop.instance()
@@ -34,11 +24,9 @@ def main(args):
 
 
 def create_parser():
-    parser = argparse.ArgumentParser(description='Coffee server')
+    parser = argparse.ArgumentParser(description='Tellet app')
     parser.add_argument('filepath')
     parser.add_argument('--port', required=False, default=8890)
-    parser.add_argument('--config', required=False, default="config.cfg")
-
     return parser
 
 

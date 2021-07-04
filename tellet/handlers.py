@@ -20,9 +20,8 @@ class My404Handler(tornado.web.RequestHandler):
         self.redirect('/')
 
 
-def _initialize(self, fp, config):
+def _initialize(self, fp):
     self.fp = fp
-    self.config = dict(config)
 
 
 class MainHandler(BaseHandler):
