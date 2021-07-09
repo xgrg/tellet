@@ -1,33 +1,184 @@
 <!DOCTYPE html>
 <html lang="en">
-   <head>
-      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-      <meta charset="utf-8">
-      <meta http-equiv="X-UA-Compatible" content="IE=edge">
-      <meta name="viewport" content="width=device-width, initial-scale=1">
-      <meta name="description" content="">
-      <meta name="author" content="">
 
-      <title>Tellet</title>
-      <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-      <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
-      <link href="css/style.css" rel="stylesheet">
+<head>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
 
-
-   </head>
-   <body>
-     <div class="container">
-       <div class="row">
-
-           <div class="col-md-6">
-Reports: not implemented yet<br>
-         <a href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
-
-       </div>
-
-     </div>
-   </div>
+  <title>Tellet</title>
+  <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+  <link href="css/style.css" rel="stylesheet">
 
 
-   </body>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/cleaning.png">
+      </div>
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/vacuum.png">
+      </div>
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/washingmachine.jpg">
+      </div>
+    </div>
+    <div class="row">
+
+
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/swimmingpool.png">
+      </div>
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/shower.png">
+      </div>
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/cleaningsurface.png">
+      </div>
+    </div>
+    <div class="row">
+
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/litterbox.png">
+      </div>
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/trashout.jpg">
+      </div>
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/hangingclothes.png">
+      </div>
+    </div>
+    <div class="row">
+
+      <div class="col-md-1">
+        <img width=75 src="/static/data/icons/dishwasher.jpg">
+      </div>
+    </div>
+
+    <a id="addother" href="/" class="btn btn-danger btn-lg" role="button">
+      <span class="glyphicon glyphicon-shopping-cart"></span> <br />Autre</a>
+    <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
+
+  </div>
+  <!-- Modal window: Adding item to shopping list  -->
+  <div id="addModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="realizedTask">Tâche réalisée</label>
+            <input id="realizedTask" input class="form-control" list="whatyoudid" name="what" placeholder="Tâche réalisée">
+
+          </div>
+          <div class="form-group">
+            <label for="taskValue">Quelle valeur lui associes-tu?</label>
+            <input type="range" class="form-range" min="0" max="5" id="taskValue">
+          </div>
+          <div class="form-group">
+            <label for="taskDuration">Combien de temps ça t'a pris?</label>
+            <input type="range" class="form-range" min="0" max="5" id="taskDuration">
+          </div>
+          <div class="form-group">
+            <label for="taskLocation">Dans quelles parties de la maison?</label>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="sejour">
+              <label class="form-check-label" for="flexSwitchCheckDefault">séjour</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="cuisine">
+              <label class="form-check-label" for="flexSwitchCheckDefault">cuisine</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="chambre1">
+              <label class="form-check-label" for="flexSwitchCheckDefault">chambre 1</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="chambre2">
+              <label class="form-check-label" for="flexSwitchCheckDefault">chambre 2</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="chambre3">
+              <label class="form-check-label" for="flexSwitchCheckDefault">chambre 3</label>
+            </div>
+            <div class="form-check form-switch">
+              <input class="form-check-input" type="checkbox" id="sdb_rdc">
+              <label class="form-check-label" for="flexSwitchCheckDefault">salle de bains RDC</label>
+            </div>
+
+          </div>
+          <div class="form-group">
+            <label for="taskComments">Commentaires</label>
+            <textarea class="form-control" id="taskComments" rows="3"></textarea>
+          </div>
+          <div class="modal-footer">
+            <button id="addtoreport" type="button" class="btn btn-success" data-dismiss="modal">Save</button>
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      $("a").click(function(e) {
+        id = $(this).attr('id');
+        e.preventDefault();
+
+        /* Clicking on the big Add button */
+        if (id == "addother") {
+          $('#addModal').modal('show');
+        }
+      })
+
+      $('a#logout').unbind('click')
+
+      /* Adding to the report list */
+      $('button#addtoreport').click(function() {
+        what = $("input#realizedTask").val();
+        if (what == ''){
+          alert('Please set a correct value');
+          return
+        }
+
+        what += ";" + $("input#taskValue").val();
+        what += ";" + $("input#taskDuration").val();
+        what += ";" + $("input#sejour").is(':checked');
+        what += ";" + $("input#cuisine").is(':checked');
+        what += ";" + $("input#chambre1").is(':checked');
+        what += ";" + $("input#chambre2").is(':checked');
+        what += ";" + $("input#chambre3").is(':checked');
+        what += ";" + $("input#sdb_rdc").is(':checked');
+        what += ";" + $("textarea#taskComments").val();
+        console.log(what);
+        $.ajax({
+          type: "POST",
+          url: "/add",
+          data: {
+            "what": what,
+            "to": "reports"
+          },
+          dataType: 'json',
+          success: function(data) {
+            console.log(data)
+            return true;
+          },
+          error: function(data) {
+            console.log(data);
+          }
+        });
+
+      });
+    </script>
+</body>
+
 </html>

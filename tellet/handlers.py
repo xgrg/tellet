@@ -166,6 +166,13 @@ class AddHandler(BaseHandler):
             shopping = self.add_to_list(what, to)
             sl = get_list_html(shopping, action_label='Acheté')
             self.write(json.dumps([True, sl]))
+        else:
+            j = json.load(open(self.fp))
+
+            dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
+            entry = (dt, username, 'did', what, to)
+            j['log'].append(entry)
+            json.dump(j, open(self.fp, 'w'), indent=4)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
