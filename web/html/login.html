@@ -3,9 +3,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <link rel="stylesheet" href="{{static_url("css/style.css")}}" />
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
 <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
 
 <script type="text/javascript" src="{{static_url("js/login.js")}}"></script>
 </head>
@@ -17,8 +18,14 @@
             <p id="profile-name" class="profile-name-card"></p>
             <form class="form-signin" method="post">
                 <span id="reauth-email" class="reauth-email"></span>
-                <input type="text" id="username" name="username" class="form-control" placeholder="Username" required autofocus>
-                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Sign in</button>
+                <center><div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+                <label class="btn btn-outline-primary" for="btnradio1">Cha</label>
+
+                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+                <label class="btn btn-outline-primary" for="btnradio2">Greg</label>
+              </div></center><br>
+                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Entrer</button>
 
             </form><!-- /form -->
             <div style='color:#dc34e6'>{{errormessage}}</div>
@@ -32,9 +39,30 @@
 $(document).ready(function() {
        $(".btn-signin").click(function(e) {
            e.preventDefault();
+           username = 'error';
+           if (document.getElementById("btnradio1").checked){
+             username = "Cha";
+           }
+           else if (document.getElementById("btnradio2").checked){
+              username = "Greg";
+           }
 
-           console.log($('#username')[0].value)
-           $("form").submit();
+           //console.log($('#username')[0].value)
+           $.ajax({
+             type: "POST",
+             url: "/auth/login",
+             data: {"username": username},
+             dataType: 'json',
+             success: function(data) {
+               console.log(data)
+               window.location.href = '/'
+               return true;
+             },
+             error: function(data) {
+               console.log(data);
+               console.log('tutu')
+             }
+           });
 
        });
     });

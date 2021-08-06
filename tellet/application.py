@@ -29,15 +29,14 @@ class Application(tornado.web.Application):
         else:
             log.info('Loaded %s' % fp)
 
-        handlers = [
-            (r"/", h.MainHandler, params),
-            (r"/shopping", h.ShoppingHandler, params),
-            (r"/add", h.AddHandler, params),
-            (r"/stats", h.StatsHandler, params),
-            (r"/todo", h.TodoHandler, params),
-            (r"/reports", h.ReportsHandler, params),
-            (r"/auth/login", h.AuthLoginHandler, params),
-            (r"/auth/logout", h.AuthLogoutHandler)]
+        handlers = [(r"/", h.MainHandler, params),
+                    (r"/shopping", h.ShoppingHandler, params),
+                    (r"/add", h.AddHandler, params),
+                    (r"/stats", h.StatsHandler, params),
+                    (r"/todo", h.TodoHandler, params),
+                    (r"/reports", h.ReportsHandler, params),
+                    (r"/auth/login", h.AuthLoginHandler, params),
+                    (r"/auth/logout", h.AuthLogoutHandler)]
 
         s = {
             "autoreload": True,
@@ -48,4 +47,5 @@ class Application(tornado.web.Application):
             "login_url": "/auth/login"
         }
         tornado.web.Application.__init__(self, handlers,
-            default_handler_class=h.My404Handler, autoescape=None, **s)
+                                         default_handler_class=h.My404Handler,
+                                         autoescape=None, **s)

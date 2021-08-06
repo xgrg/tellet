@@ -9,8 +9,10 @@
       <meta name="author" content="">
 
       <title>Tellet</title>
-      <link href="//netdna.bootstrapcdn.com/bootstrap/3.3.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
-      <script src="//netdna.bootstrapcdn.com/bootstrap/3.3.0/js/bootstrap.min.js"></script>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.5.0/chart.min.js" crossorigin="anonymous"></script>
       <link href="css/style.css" rel="stylesheet">
 
 
@@ -21,8 +23,12 @@
 
          <div class="col-md-6">
 
-           Log
+           <canvas id="myChart1" width="400" height="400"></canvas>
+           <br>
+           <! <canvas id="myChart2" width="400" height="400"></canvas> 
+
            <br><br>
+           <H2> Données brutes:</h2>
            {{list}}
            <br><br>
            <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
@@ -31,6 +37,28 @@
 
        </div>
      </div>
+<script>
 
+$.ajax({
+  type: "POST",
+  url: "/stats",
+  data: {},
+  dataType: 'json',
+  success: function(config) {
+    console.log(config)
+    var ctx = document.getElementById('myChart1');
+    var myChart = new Chart(ctx, config['ntotal'])
+    var ctx = document.getElementById('myChart2');
+    var myChart = new Chart(ctx, config['radar'])
+    return true;
+  },
+  error: function(data) {
+    console.log(data);
+  }
+});
+
+
+</script>
    </body>
+
 </html>

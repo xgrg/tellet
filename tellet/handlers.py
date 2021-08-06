@@ -49,8 +49,9 @@ def get_list_html(j, action_label):
     sl = ['''<li class="list-group-item d-flex justify-content-between
               align-items-center">
                 %s
-                <span class="badge badge-pill badge-danger">Retirer</span>
-                <span class="badge badge-pill badge-success">%s </span>
+                <span>
+                <span class="badge bg-danger">Retirer</span>
+                <span class="badge bg-success">%s </span></span>
               </li>''' % (each, action_label) for each in j]
     list_html = '<div id="itemlist"><ul class="list-group">%s</ul></div>' % ''.join(sl)
     return list_html
@@ -178,6 +179,61 @@ class AddHandler(BaseHandler):
         _initialize(self, **kwargs)
 
 
+def get_doughnut(df, label='My dataset'):
+    labels = ['Greg', 'Cha']
+    data = []
+    for i in labels:
+        data.append(len(df.query('who == "%s" & action == "did"' % i)))
+
+    graph = {'labels': labels,
+             'datasets': [{'label': label,
+                           'data': data,
+                           'backgroundColor': ['rgb(54, 162, 235)',
+                                               'rgb(255, 99, 132)'],
+                           'hoverOffset': 4}]}
+
+    config = {'type': 'doughnut',
+              'data': graph}
+    return config
+
+
+def get_radar(df, label='My dataset'):
+    labels = ['Greg', 'Cha']
+
+    actions = ['Aspirateur', 'Lave-vaisselle', 'Linge', 'Ajout courses',
+               'Faire courses', 'Nettoyer cuisine', 'Pavé']
+
+    d1 = {
+      'label': labels[1],
+      'data': [65, 59, 90, 81, 56, 55, 40],
+      'fill': True,
+      'backgroundColor': 'rgba(255, 99, 132, 0.2)',
+      'borderColor': 'rgb(255, 99, 132)',
+      'pointBackgroundColor': 'rgb(255, 99, 132)',
+      'pointBorderColor': '#fff',
+      'pointHoverBackgroundColor': '#fff',
+      'pointHoverBorderColor': 'rgb(255, 99, 132)'
+    }
+    d2 = {
+      'label': labels[0],
+      'data': [28, 48, 40, 19, 96, 27, 100],
+      'fill': True,
+      'backgroundColor': 'rgba(54, 162, 235, 0.2)',
+      'borderColor': 'rgb(54, 162, 235)',
+      'pointBackgroundColor': 'rgb(54, 162, 235)',
+      'pointBorderColor': '#fff',
+      'pointHoverBackgroundColor': '#fff',
+      'pointHoverBorderColor': 'rgb(54, 162, 235)'
+    }
+    data = {'labels': actions,
+            'datasets': [d1, d2]}
+    options = {'elements': {'line': {'borderWidth': 3}}}
+    config = {'type': 'radar',
+              'data': data,
+              'options': options}
+    return config
+
+
 class StatsHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -194,6 +250,19 @@ class StatsHandler(BaseHandler):
         </style>
         ''' + df.to_html(classes="df")
         self.render("html/stats.html", list=html)
+
+    def post(self):
+        loglist = json.load(open(self.fp))['log']
+        columns = ['ts', 'who', 'action', 'what', 'where']
+        df = pd.DataFrame(loglist, columns=columns).set_index('ts')
+
+        # n total
+        graph1 = get_doughnut(df, '# total de contributions')
+        graph2 = get_radar(df, 'Répartition des actions')
+        config = {'ntotal': graph1,
+                  'radar': graph2}
+
+        self.write(json.dumps(config))
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -227,7 +296,9 @@ class AuthLoginHandler(BaseHandler):
         self.render("html/login.html", errormessage=errormessage,)
 
     def check_permission(self, username):
-        return True
+        if username in ['Cha', 'Greg']:
+            print(username)
+            return True
 
     def post(self):
         username = str(self.get_argument("username", ""))
@@ -235,7 +306,7 @@ class AuthLoginHandler(BaseHandler):
         auth = self.check_permission(username)
         if auth:
             self.set_current_user(username)
-            self.redirect(u"/")
+            self.write(json.dumps([]))
         else:
             error_msg = u"?error=" + tornado.escape.url_escape("Wrong login/password.")
             self.redirect(u"/auth/login/" + error_msg)
