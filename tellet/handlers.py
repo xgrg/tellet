@@ -302,7 +302,9 @@ class StatsHandler(BaseHandler):
 
         html = '''
         <style>
-            table.df { width: 400px}
+            table.df { display: block;
+    overflow-x: auto;
+    white-space: nowrap;}
             .df tbody tr:nth-child(even) { background-color: lightblue; }
         </style>
         ''' + df.to_html(classes="df")
