@@ -258,7 +258,6 @@ def get_stacked_doughnut(df):
         if row.action != 'did' or str(row['where']) != 'reports': continue
         sorted_actions.setdefault(row.who, {})
         items = row.what.split(';')
-        print(i, items)
         what = items[0]
         duration = items[2]
         sorted_actions[row.who].setdefault(duration, [])
