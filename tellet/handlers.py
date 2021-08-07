@@ -200,37 +200,94 @@ def get_doughnut(df, label='My dataset'):
 def get_radar(df, label='My dataset'):
     labels = ['Greg', 'Cha']
 
-    actions = ['Aspirateur', 'Lave-vaisselle', 'Linge', 'Ajout courses',
-               'Faire courses', 'Nettoyer cuisine', 'Pavé']
+    actions = ['aspirateur', 'lavevaisselle', 'linge', 'lessive',
+               'litière', 'nettoyer', 'pavé', 'douche', 'wc', 'piscine',
+               'poubelles', 'cuisine', 'autres']
+    sorted_actions = {}
+    for i, row in df.iterrows():
+        if row.action != 'did' or str(row['where']) != 'reports': continue
+        sorted_actions.setdefault(row.who, {})
+        what = row.what
+        has_found = False
+        for a in actions[:-1]:
+            sorted_actions[row.who].setdefault(a, [])
+            if what.startswith(a):
+                sorted_actions[row.who][a].append(what)
+                has_found = True
+        if not has_found:
+            sorted_actions[row.who].setdefault('autres', [])
+            sorted_actions[row.who]['autres'].append(row.what)
+    print(sorted_actions['Cha']['autres'])
+    print(sorted_actions['Greg']['autres'])
 
-    d1 = {
-      'label': labels[1],
-      'data': [65, 59, 90, 81, 56, 55, 40],
-      'fill': True,
-      'backgroundColor': 'rgba(255, 99, 132, 0.2)',
-      'borderColor': 'rgb(255, 99, 132)',
-      'pointBackgroundColor': 'rgb(255, 99, 132)',
-      'pointBorderColor': '#fff',
-      'pointHoverBackgroundColor': '#fff',
-      'pointHoverBorderColor': 'rgb(255, 99, 132)'
-    }
-    d2 = {
-      'label': labels[0],
-      'data': [28, 48, 40, 19, 96, 27, 100],
-      'fill': True,
-      'backgroundColor': 'rgba(54, 162, 235, 0.2)',
-      'borderColor': 'rgb(54, 162, 235)',
-      'pointBackgroundColor': 'rgb(54, 162, 235)',
-      'pointBorderColor': '#fff',
-      'pointHoverBackgroundColor': '#fff',
-      'pointHoverBorderColor': 'rgb(54, 162, 235)'
-    }
+    datasets = []
+    colors = [{'backgroundColor': 'rgba(54, 162, 235, 0.2)',
+               'borderColor': 'rgb(54, 162, 235)',
+               'pointBackgroundColor': 'rgb(54, 162, 235)',
+               'pointBorderColor': '#fff',
+               'pointHoverBackgroundColor': '#fff',
+               'pointHoverBorderColor': 'rgb(54, 162, 235)'},
+              {'backgroundColor': 'rgba(255, 99, 132, 0.2)',
+               'borderColor': 'rgb(255, 99, 132)',
+               'pointBackgroundColor': 'rgb(255, 99, 132)',
+               'pointBorderColor': '#fff',
+               'pointHoverBackgroundColor': '#fff',
+               'pointHoverBorderColor': 'rgb(255, 99, 132)'}]
+
+    for who, c in zip(labels, colors):
+        d = {'label': who,
+             'data': [len(sorted_actions[who][a]) for a in actions],
+             'fill': True}
+        d.update(c)
+        datasets.append(d)
+
     data = {'labels': actions,
-            'datasets': [d1, d2]}
-    options = {'elements': {'line': {'borderWidth': 3}}}
+            'datasets': datasets}
+    options = {'elements': {'line': {'borderWidth': 3}},
+               'plugins': {'colorschemes': {'scheme': 'brewer.SetThree12'}}}
+
     config = {'type': 'radar',
               'data': data,
               'options': options}
+    return config
+
+
+def get_stacked_doughnut(df):
+    sorted_actions = {}
+    for i, row in df.iterrows():
+        if row.action != 'did' or str(row['where']) != 'reports': continue
+        sorted_actions.setdefault(row.who, {})
+        items = row.what.split(';')
+        print(i, items)
+        what = items[0]
+        duration = items[2]
+        sorted_actions[row.who].setdefault(duration, [])
+        sorted_actions[row.who][duration].append(what)
+
+    d1 = [len(sorted_actions['Cha'].get(e, [])) for e in '012345']
+    d2 = [len(sorted_actions['Greg'].get(e, [])) for e in '012345']
+
+    data = {'labels': ['<1 min', '1-7 min', '10-15 min', '20-30 min',
+                       '>30 min', '>2 h'],
+            'datasets': [{'label': 'Cha',
+                          'data': d1,
+                          'borderColor': 'rgb(255, 99, 132)',
+                          'backgroundColor': 'rgba(255, 99, 132, 0.2)'},
+                         {'label': 'Greg',
+                          'data': d2,
+                          'borderColor': 'rgb(54, 162, 235)',
+                          'backgroundColor': 'rgba(54, 162, 235, 0.2)'}]}
+
+    config = {'type': 'bar',
+              'data': data,
+              'options': {
+                'indexAxis': 'y',
+                'elements': {'bar': {'borderWidth': 2}},
+                'responsive': True,
+                'plugins': {
+                  'legend': {'position': 'right'}
+                 }
+              }}
     return config
 
 
@@ -246,6 +303,7 @@ class StatsHandler(BaseHandler):
 
         html = '''
         <style>
+            table.df { width: 400px}
             .df tbody tr:nth-child(even) { background-color: lightblue; }
         </style>
         ''' + df.to_html(classes="df")
@@ -259,8 +317,10 @@ class StatsHandler(BaseHandler):
         # n total
         graph1 = get_doughnut(df, '# total de contributions')
         graph2 = get_radar(df, 'Répartition des actions')
+        graph3 = get_stacked_doughnut(df)
         config = {'ntotal': graph1,
-                  'radar': graph2}
+                  'radar': graph2,
+                  'stacked': graph3}
 
         self.write(json.dumps(config))
 

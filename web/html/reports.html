@@ -27,13 +27,13 @@
 
       <div class="col-md-6">
         <button type="button" class="btn btn-secondary">
-          <img id="cleaning" width=75 src="/static/data/icons/cleaning.png">
+          <img id="cleaning" data-description="Passer le pavé" data-value="pavé" width=75 src="/static/data/icons/cleaning.png">
         </button>
         <button type="button" class="btn btn-secondary">
-          <img id="vacuum" width=75 src="/static/data/icons/vacuum.png">
+          <img id="vacuum" data-value="aspirateur" data-description="Passer l'aspirateur" width=75 src="/static/data/icons/vacuum.png">
         </button>
         <button type="button" class="btn btn-secondary">
-          <img id="washingmachine" width=75 src="/static/data/icons/washingmachine.png">
+          <img id="washingmachine" data-value="lessive" data-description="Faire une lessive" width=75 src="/static/data/icons/washingmachine.png">
         </button>
       </div>
     </div>
@@ -41,27 +41,26 @@
     <p>
     <div class="col-md-6">
       <button type="button" class="btn btn-secondary">
-        <img id="swimmingpool" width=75 src="/static/data/icons/swimmingpool.png">
-      </button>
-
-      <button type="button" class="btn btn-secondary">
-        <img id="shower" width=75 src="/static/data/icons/shower.png">
+        <img id="swimmingpool" data-value="piscine" data-description="Piscine" width=75 src="/static/data/icons/swimmingpool.png">
       </button>
       <button type="button" class="btn btn-secondary">
-        <img id="cleaningsurface" width=75 src="/static/data/icons/cleaningsurface.png">
+        <img id="shower" data-value="douche" data-description="Nettoyer la douche" width=75 src="/static/data/icons/shower.png">
+      </button>
+      <button type="button" class="btn btn-secondary">
+        <img id="cleaningsurface" data-value="nettoyer" data-description="Nettoyer une surface" width=75 src="/static/data/icons/cleaningsurface.png">
       </button>
     </div>
     </p>
     <p>
     <div class="col-md-6">
       <button type="button" class="btn btn-secondary">
-        <img id="litterbox" width=75 src="/static/data/icons/litterbox.png">
+        <img id="litterbox" data-value="litière" data-description="Nettoyer la litière" width=75 src="/static/data/icons/litterbox.png">
       </button>
       <button type="button" class="btn btn-secondary">
-        <img id="trashout" width=75 src="/static/data/icons/trashout.png">
+        <img id="trashout" data-value="poubelles" data-description="Sortir poubelles" width=75 src="/static/data/icons/trashout.png">
       </button>
       <button type="button" class="btn btn-secondary">
-        <img id="hangingclothes" width=75 src="/static/data/icons/hangingclothes.png">
+        <img id="hangingclothes" data-value="linge" data-description="(D)étendre le linge" width=75 src="/static/data/icons/hangingclothes.png">
       </button>
     </div>
     </p>
@@ -69,7 +68,13 @@
 
     <div class="col-md-6">
       <button type="button" class="btn btn-secondary">
-        <img id="dishwasher" width=75 src="/static/data/icons/dishwasher.png">
+        <img id="dishwasher" data-value="lavevaisselle" data-description="Vider le lave-vaisselle" width=75 src="/static/data/icons/dishwasher.png">
+      </button>
+      <button type="button" class="btn btn-secondary">
+        <img id="toilet" data-value="wc" data-description="Nettoyer WC" width=75 src="/static/data/icons/toilet.png">
+      </button>
+      <button type="button" class="btn btn-secondary">
+        <img id="cooking" data-value="cuisine" data-description="Préparer le repas" width=75 src="/static/data/icons/cooking.png">
       </button>
     </div>
     </p>
@@ -92,19 +97,40 @@
 
         </div>
         <div class="modal-body">
+          <p>
           <div class="form-group">
             <label for="realizedTask">Tâche réalisée</label>
             <input id="realizedTask" input class="form-control" list="whatyoudid" name="what" placeholder="Tâche réalisée">
+          </div>
+          </p>
+          <p>
+          <div id="mood" class="btn-group" role="group" aria-label="Mood">
+            <input type="radio" data-value=0 class="btn-check" name="btnradio1" id="moodok" autocomplete="off" checked>
+            <label class="btn btn-outline-success" for="moodok">😃</label>
+            <input type="radio" data-value=1 class="btn-check" name="btnradio1" id="moodtired" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="moodtired">😫</label>
+            <input type="radio" data-value=2 class="btn-check" name="btnradio1" id="moodnotok" autocomplete="off">
+            <label class="btn btn-outline-danger" for="moodnotok">😠</label>
 
           </div>
-          <div class="form-group">
-            <label for="taskValue">Quelle valeur lui associes-tu?</label>
-            <input type="range" class="form-range" min="0" max="5" id="taskValue">
+          </p>
+          <p>
+          <div id="duration" class="btn-group" role="group" aria-label="Task duration">
+            <input type="radio" data-value=0 class="btn-check" name="btnradio2" id="btnradio1" autocomplete="off" checked>
+            <label class="btn btn-outline-primary" for="btnradio1">&lt;1 min</label>
+            <input type="radio" data-value=1 class="btn-check" name="btnradio2" id="btnradio2" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio2">1-7 min</label>
+            <input type="radio" data-value=2 class="btn-check" name="btnradio2" id="btnradio3" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio3">10-15 min</label>
+            <input type="radio" data-value=3 class="btn-check" name="btnradio2" id="btnradio4" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio4">&gt;20-30 min</label>
+            <input type="radio" data-value=4 class="btn-check" name="btnradio2" id="btnradio5" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio5">&gt;30 min</label>
+            <input type="radio" data-value=5 class="btn-check" name="btnradio2" id="btnradio6" autocomplete="off">
+            <label class="btn btn-outline-primary" for="btnradio5">&gt;2 h</label>
           </div>
-          <div class="form-group">
-            <label for="taskDuration">Combien de temps ça t'a pris?</label>
-            <input type="range" class="form-range" min="0" max="5" id="taskDuration">
-          </div>
+          </p>
+
           <div class="form-group">
             <label for="taskComments">Commentaires</label>
             <textarea class="form-control" id="taskComments" rows="3"></textarea>
@@ -125,7 +151,7 @@
         if (id == "addother") {
           $('#addModal').modal('show');
           $("input#realizedTask").val("");
-          $("input#realizedTask").show();
+          $("input#realizedTask").parent().show();
           $("h5#tasktitle").text("");
 
         }
@@ -141,9 +167,13 @@
           return
         }
 
-        what += ";" + $("input#taskValue").val();
-        what += ";" + $("input#taskDuration").val();
-        what += ";" + $("textarea#taskComments").val();
+        comments = $("textarea#taskComments").val();
+        comments = comments.replace(/;/g, "-");
+        taskduration = $('#duration input:radio:checked').attr('data-value');
+        taskmood = $('#mood input:radio:checked').attr('data-value');
+
+        what += ";" + taskmood + ";" + taskduration + ";" + comments;
+
         console.log(what);
         $.ajax({
           type: "POST",
@@ -161,73 +191,19 @@
             console.log(data);
           }
         });
-
       });
 
       $("img").click(function(e) {
         console.log('tot')
         id = $(this).attr('id');
+        val = $(this).attr('data-value');
+        desc = $(this).attr('data-description');
 
-        if (id == "cleaning") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Pavé");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Passer le pavé");
-        }
-        if (id == "vacuum") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Aspirateur");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Passer l'aspirateur");
-        }
-        if (id == "washingmachine") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Lessive");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Faire une lessive");
-        }
-        if (id == "swimmingpool") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Piscine");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Piscine");
-        }
-        if (id == "litterbox") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Litière");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Nettoyer la litière");
-        }
-        if (id == "hangingclothes") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Linge");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("(D)étendre le linge");
-        }
-        if (id == "dishwasher") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Lave-vaisselle");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Vider le lave-vaisselle");
-        }
-        if (id == "trashout") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Poubelles");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Sortir poubelles");
-        }
-        if (id == "shower") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Douche");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Nettoyer douche");
-        }
-        if (id == "cleaningsurface") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("Nettoyer");
-          $("input#realizedTask").hide();
-          $("h5#tasktitle").text("Nettoyer une surface");
-        }
+        $('#addModal').modal('show');
+        $("input#realizedTask").val(val);
+        $("input#realizedTask").parent().hide();
+        $("h5#tasktitle").text(desc);
+
       });
     </script>
 </body>
