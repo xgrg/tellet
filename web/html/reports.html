@@ -153,6 +153,7 @@
         if (id == "addother") {
           $('#addModal').modal('show');
           $("input#realizedTask").val("");
+          $("textarea#taskComments").val("");
           $("input#realizedTask").parent().show();
           $("h5#tasktitle").text("");
 
@@ -202,6 +203,7 @@
         desc = $(this).attr('data-description');
 
         $('#addModal').modal('show');
+        $("textarea#taskComments").val("");
         $("input#realizedTask").val(val);
         $("input#realizedTask").parent().hide();
         $("h5#tasktitle").text(desc);
