@@ -28,6 +28,23 @@ def _initialize(self, fp):
     self.fp = fp
 
 
+def get_color_ndays(n, cutoffs=[7, 15], ascending=True):
+    mini, maxi = cutoffs
+    if ascending:
+        if n < mini:
+            if ascending:
+                return 'bs-callout-info'
+            else:
+                return 'bs-callout-danger'
+        elif n < maxi:
+            return 'bs-callout-warning'
+        elif n > maxi:
+            if ascending:
+                return 'bs-callout-danger'
+            else:
+                return 'bs-callout-info'
+
+
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
@@ -39,7 +56,54 @@ class MainHandler(BaseHandler):
         dt = datetime.fromtimestamp(commit.committed_date)
         version = datetime.strftime(dt, '%Y%m%d-%H%M%S')
 
-        self.render("html/index.html", version=version)
+        loglist = json.load(open(self.fp))['log']
+        columns = ['ts', 'who', 'action', 'what', 'where']
+        df = pd.DataFrame(loglist, columns=columns).set_index('ts')
+        df = df.sort_index(ascending=False)
+        rp = df.query('action == "did" & where == "reports"')
+        rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
+
+
+        # last poubelle
+        rp = df.query('action == "did" & where == "reports"')
+        rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
+        lp = rp.query('what2 == "poubelles"').iloc[0]
+        dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
+        comments = lp.what.split(';')[-1]
+        if comments != '': comments = ' ' + comments
+        opt = {'ndays': dt.days,
+               'who': lp.who,
+               'comments': comments,
+               'color': get_color_ndays(dt.days, [7,15], False)}
+        callout = '<div class="bs-callout bs-callout-info {color}">'\
+                  'Dernière poubelle il y a <strong>{ndays} jours</strong>'\
+                  ' ({who}{comments})</div>'''.format(**opt)
+
+        # last wc
+        lw = rp.query('what2 == "wc"').iloc[0]
+        dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
+        comments = lp.what.split(';')[-1]
+        if comments != '': comments = ' ' + comments
+        opt = {'ndays': dt.days,
+               'who': lp.who,
+               'comments': comments,
+               'color': get_color_ndays(dt.days, [7,15], True)}
+        callout = callout + '<div class="bs-callout {color}">'\
+                  'Dernier nettoyage WC il y a <strong>{ndays} jours</strong>'\
+                  ' ({who}{comments})</div>'''.format(**opt)
+
+        # is it laundry day
+        wd = datetime.now().weekday()
+        if wd == 2:
+            callout = callout + '<div class="bs-callout bs-callout-warning">'\
+                  '<strong>Jour de lessive</strong> &nbsp; '\
+                  '<span class="badge bg-warning">Rappel</span></div>'''
+        elif wd == 1:
+            callout = callout + '<div class="bs-callout bs-callout-warning">'\
+                  'Demain jour de lessive &nbsp;'\
+                  '<span class="badge bg-warning">Rappel</span></div>'''
+
+        self.render("html/index.html", version=version, callout=callout)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -299,6 +363,7 @@ class StatsHandler(BaseHandler):
         loglist = json.load(open(self.fp))['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
+        df = df.sort_index(ascending=False)
 
         html = '''
         <style>
