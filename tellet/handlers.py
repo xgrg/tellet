@@ -81,13 +81,13 @@ class MainHandler(BaseHandler):
 
         # last wc
         lw = rp.query('what2 == "wc"').iloc[0]
-        dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
-        comments = lp.what.split(';')[-1]
+        dt = datetime.now() - datetime.strptime(lw.name, '%Y%m%d_%H%M%S')
+        comments = lw.what.split(';')[-1]
         if comments != '': comments = ' ' + comments
         opt = {'ndays': dt.days,
-               'who': lp.who,
+               'who': lw.who,
                'comments': comments,
-               'color': get_color_ndays(dt.days, [7,15], True)}
+               'color': get_color_ndays(dt.days, [7, 15], True)}
         callout = callout + '<div class="bs-callout {color}">'\
                   'Dernier nettoyage WC il y a <strong>{ndays} jours</strong>'\
                   ' ({who}{comments})</div>'''.format(**opt)
