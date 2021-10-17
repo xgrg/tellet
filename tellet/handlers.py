@@ -109,8 +109,20 @@ class MainHandler(BaseHandler):
         _initialize(self, **kwargs)
 
 
-def get_list_html(j, action_label):
-    sl = ['''<li class="list-group-item d-flex justify-content-between
+def get_list_html(j, action_label, fridge=False):
+    if fridge:
+        sl = []
+        for each in j:
+            label = each.split(';')[0]
+            sl.append('''<li class="list-group-item d-flex justify-content-between
+                  align-items-center" data-data="%s">
+                    %s
+                    <span>
+                    <span class="badge bg-danger">Retirer</span>
+                    <span class="badge bg-success">%s </span></span>
+                  </li>''' % (each, label, action_label))
+    else:
+        sl = ['''<li class="list-group-item d-flex justify-content-between
               align-items-center">
                 %s
                 <span>
@@ -163,12 +175,44 @@ class ShoppingHandler(BaseHandler, ListHandler):
         print((username, action, what))
 
         that_list = self.remove_from_list(what, 'shopping', action)
+
         is_found = that_list is not None
         sl = None
         if is_found:
             sl = 'La liste est vide. Rien à acheter !'
             if len(that_list) != 0:
                 sl = get_list_html(that_list, action_label='Acheté')
+
+        self.write(json.dumps([is_found, sl]))
+
+    def initialize(self, **kwargs):
+        _initialize(self, **kwargs)
+
+
+class FridgeHandler(BaseHandler, ListHandler):
+    @tornado.web.authenticated
+    def get(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+
+        print('\n*** %s is looking into the fridge.' % username)
+        shopping = json.load(open(self.fp))['fridge']
+        sl = get_list_html(shopping, action_label='Utilisé', fridge=True)
+        self.render("html/fridge.html", list=sl)
+
+    def post(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+        action = str(self.get_argument("action", ""))
+        what = str(self.get_argument("what", "\n")).split('\n')[0]
+
+        print((username, action, what))
+
+        that_list = self.remove_from_list(what, 'fridge', action)
+        is_found = that_list is not None
+        sl = None
+        if is_found:
+            sl = 'La liste est vide. Rien à acheter !'
+            if len(that_list) != 0:
+                sl = get_list_html(that_list, action_label='Acheté', fridge=True)
 
         self.write(json.dumps([is_found, sl]))
 
@@ -227,11 +271,13 @@ class AddHandler(BaseHandler):
         what = str(self.get_argument("what", ""))
 
         print((username, to, what.split('\n')[0]))
-        if to in ['shopping', 'todo']:
+        if to in ['shopping', 'todo', 'fridge']:
+            actions_labels = {'shopping': 'Acheté', 'todo': 'Fait', 'fridge':'Utiliser'}
             shopping = self.add_to_list(what, to)
-            sl = get_list_html(shopping, action_label='Acheté')
+            sl = get_list_html(shopping, action_label=actions_labels[to],
+                               fridge=to=='fridge')
             self.write(json.dumps([True, sl]))
-        else:
+        else: # log
             j = json.load(open(self.fp))
 
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')

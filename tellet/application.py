@@ -23,7 +23,8 @@ class Application(tornado.web.Application):
         if not op.isfile(fp):
             d = {'shopping': [],
                  'todo': [],
-                 'log': []}
+                 'log': [],
+                 'fridge': []}
             log.warning('File not found. Created %s' % fp)
             json.dump(d, open(fp, 'w'))
         else:
@@ -35,6 +36,7 @@ class Application(tornado.web.Application):
                     (r"/stats", h.StatsHandler, params),
                     (r"/todo", h.TodoHandler, params),
                     (r"/reports", h.ReportsHandler, params),
+                    (r"/fridge", h.FridgeHandler, params),
                     (r"/auth/login", h.AuthLoginHandler, params),
                     (r"/auth/logout", h.AuthLogoutHandler)]
 

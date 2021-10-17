@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Tellet</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+
+  <link href="css/style.css" rel="stylesheet">
+
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+
+      <div class="col-md-6">
+        <a id="addtofridge" href="#" class="btn btn-danger btn-lg" role="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
+            <path
+              d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+          </svg>
+          <br />Ajouter</a>
+        <br><br>
+
+        {{list}}
+        <br>
+        <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal window: Item not found (somebody removed it at the same time -->
+  <div id="notfoundModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <p>Item not found.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal window: Adding item to fridge list  -->
+  <div id="addModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <input id="textbox" input class="form-control" list="whattoaddfridge" name="browser">
+            <datalist id="whattoaddfridge">
+            </datalist>
+          </p>
+          <p>
+            <input id='expirydate' input class="form-control" type="number" placeholder="JJMMAAAA" aria-label="Expiry date">
+          </p>
+          <p>
+            <input id='quantity' input class="form-control" type="number" placeholder="Quantité" aria-label="Quantité">
+          </p>
+          <p>
+          <div id="unittype" class="btn-group" role="group" aria-label="Units">
+            <input type="radio" data-value="g" class="btn-check" name="btnradio1" id="unitg" autocomplete="off" checked>
+            <label class="btn btn-outline-secondary" for="unitg">g</label>
+            <input type="radio" data-value="mL" class="btn-check" name="btnradio1" id="unitml" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="unitml">mL</label>
+            <input type="radio" data-value="units" class="btn-check" name="btnradio1" id="unitunit" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="unitunit">unités</label>
+
+          </div>
+          </p>
+          <p>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitch" checked>
+            <label class="form-check-label" for="flexSwitchCheckDefault">Ajouter au frigo</label>
+          </div>
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button id="savetofridge" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal window: Use item from fridge list  -->
+  <div id="useModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <input id="textbox" input class="form-control" list="whattoaddshopping" name="browser">
+            <datalist id="whattousefridge">
+            </datalist>
+          </p>
+          <p>
+            <input id='quantity' input class="form-control" type="number" placeholder="Quantité" aria-label="Quantité">
+            <label for="unit">unité</label>
+
+          </p>
+          <p>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses</label>
+          </div>
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button id="addtobuy" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal window: Readd item to shopping list  -->
+  <div id="reshopModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses ?</label>
+        </div>
+
+        <div class="modal-footer">
+          <button id="reshop" type="button" class="btn btn-success" data-bs-dismiss="modal">Oui</button>
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Non</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* When someone clicks on Bought */
+    function click_use() {
+      data = $(this).parent().parent().data('data');
+
+      $('input#textbox').val(data)
+      $('#useModal').modal('show');
+    }
+
+    /* When someone clicks on Removed */
+    function click_removed() {
+      console.log($(this).parent().parent().data('data'));
+      click_badge($(this), '/fridge', 'remove');
+
+    }
+
+    function click_badge(item, url, action) {
+      if (action == 'remove'){
+        what = $(this).parent().parent().data('data');
+      }
+      $.ajax({
+        type: "POST",
+        url: url,
+        dataType: 'json',
+        data: {
+          "what": what,
+          "action": action
+        },
+        success: function(data) {
+          console.log(data)
+          if (data[0] == false) {
+            $('#notfoundModal').modal('show');
+            return true;
+          } else {
+            html = data[1];
+            console.log(data)
+            $("div#itemlist").html(html)
+            $("span.bg-danger").click(click_removed);
+            $("span.bg-success").click(click_bought)
+            return true;
+          }
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    }
+
+
+    $("span.bg-danger").click(click_removed)
+    $("span.bg-success").click(click_use)
+
+
+    $("a").click(function(e) {
+      id = $(this).attr('id');
+      e.preventDefault();
+
+      /* Clicking on the big Add button */
+      if (id == "addtofridge") {
+        console.log(id);
+        options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
+        html = '';
+        options.forEach(function(v) {
+          html += '<option value="' + v + '">';
+        });
+        $('datalist#whattoaddfridge').html(html)
+        $('#addModal').modal('show');
+      }
+    })
+
+    $('a#logout').unbind('click')
+
+    /* Adding to the shopping list */
+    $('button#savetofridge').click(function() {
+      what = $("input#textbox").val();
+      q = $("input#quantity").val();
+      ed = $("input#expirydate").val();
+      unittype = $('#unittype input:radio:checked').attr('data-value');
+      reshop = $('#flexSwitch')[0].hasAttribute('checked');
+
+      what = what + ';' + q + ';' + ed + ';' + unittype;
+      console.log(what);
+      $.ajax({
+        type: "POST",
+        url: "/add",
+        data: {
+          "what": what,
+          "to": "fridge"
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data)
+          if (data[0] == false) {
+            $('#notfoundModal').modal('show');
+            return true;
+          } else {
+            html = data[1];
+            console.log(data)
+            $("div#itemlist").html(html)
+            $("span.bg-danger").click(click_removed);
+            $("span.bg-success").click(click_bought);
+
+            return true;
+          }
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    });
+  </script>
+</body>
+
+</html>
