@@ -113,14 +113,17 @@ def get_list_html(j, action_label, fridge=False):
     if fridge:
         sl = []
         for each in j:
-            label = each.split(';')[0]
+            label, q, original_q, unit, ed = each.split(';')
+            print(ed)
+            ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
+
             sl.append('''<li class="list-group-item d-flex justify-content-between
                   align-items-center" data-data="%s">
-                    %s
+                    %s &#8211; %s/%s %s &#8211; expire le %s
                     <span>
                     <span class="badge bg-danger">Retirer</span>
                     <span class="badge bg-success">%s </span></span>
-                  </li>''' % (each, label, action_label))
+                  </li>''' % (each, label, q, original_q, unit, ed, action_label))
     else:
         sl = ['''<li class="list-group-item d-flex justify-content-between
               align-items-center">
@@ -196,12 +199,13 @@ class FridgeHandler(BaseHandler, ListHandler):
 
         print('\n*** %s is looking into the fridge.' % username)
         shopping = json.load(open(self.fp))['fridge']
-        sl = get_list_html(shopping, action_label='Utilisé', fridge=True)
+        sl = get_list_html(shopping, action_label='Utiliser', fridge=True)
         self.render("html/fridge.html", list=sl)
 
     def post(self):
         username = str(self.current_user[1:-1], 'utf-8')
         action = str(self.get_argument("action", ""))
+        print(str(self.get_argument("what", "\n")))
         what = str(self.get_argument("what", "\n")).split('\n')[0]
 
         print((username, action, what))
@@ -210,9 +214,9 @@ class FridgeHandler(BaseHandler, ListHandler):
         is_found = that_list is not None
         sl = None
         if is_found:
-            sl = 'La liste est vide. Rien à acheter !'
+            sl = 'La liste est vide. Rien au frigo !'
             if len(that_list) != 0:
-                sl = get_list_html(that_list, action_label='Acheté', fridge=True)
+                sl = get_list_html(that_list, action_label='Utiliser', fridge=True)
 
         self.write(json.dumps([is_found, sl]))
 
@@ -276,6 +280,52 @@ class AddHandler(BaseHandler):
             shopping = self.add_to_list(what, to)
             sl = get_list_html(shopping, action_label=actions_labels[to],
                                fridge=to=='fridge')
+
+            self.write(json.dumps([True, sl]))
+        else: # log
+            j = json.load(open(self.fp))
+
+            dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
+            entry = (dt, username, 'did', what, to)
+            j['log'].append(entry)
+            json.dump(j, open(self.fp, 'w'), indent=4)
+
+    def initialize(self, **kwargs):
+        _initialize(self, **kwargs)
+
+
+class EditHandler(BaseHandler):
+    def add_to_list(self, what, which_list, item):
+        username = str(self.current_user[1:-1], 'utf-8')
+
+        j = json.load(open(self.fp))
+        that_list = j[which_list]
+        i = that_list.index(item)
+        that_list.remove(item)
+        that_list.insert(i, what)
+        j[which_list] = that_list
+
+        dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
+        entry = (dt, username, 'edit', what, which_list)
+        j['log'].append(entry)
+
+        json.dump(j, open(self.fp, 'w'), indent=4)
+        return that_list
+
+    @tornado.web.authenticated
+    def post(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+        to = str(self.get_argument("to", ""))
+        what = str(self.get_argument("what", ""))
+        item = str(self.get_argument("item", ""))
+
+        print((username, to, what.split('\n')[0]))
+        if to in ['shopping', 'todo', 'fridge']:
+            actions_labels = {'shopping': 'Acheté', 'todo': 'Fait', 'fridge':'Utiliser'}
+            shopping = self.add_to_list(what, to, item)
+            sl = get_list_html(shopping, action_label=actions_labels[to],
+                               fridge=to=='fridge')
+
             self.write(json.dumps([True, sl]))
         else: # log
             j = json.load(open(self.fp))

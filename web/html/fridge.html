@@ -50,7 +50,7 @@
           <h4 class="modal-title"></h4>
         </div>
         <div class="modal-body">
-          <p>Item not found.</p>
+          <p id="errormsg">Item not found.</p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
@@ -110,6 +110,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 id="itemtitle" class="modal-title"></h5>
           <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
@@ -119,8 +120,8 @@
             </datalist>
           </p>
           <p>
-            <input id='quantity' input class="form-control" type="number" placeholder="Quantité" aria-label="Quantité">
-            <label for="unit">unité</label>
+            <label id="original_q" for="quantity">unité</label>
+            <input id='quantity' input class="form-control" type="number" placeholder="Quantité utilisée" aria-label="Quantité">
 
           </p>
           <p>
@@ -132,7 +133,7 @@
         </div>
 
         <div class="modal-footer">
-          <button id="addtobuy" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+          <button id="useitem" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
           <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
@@ -156,24 +157,75 @@
   </div>
 
   <script>
-    /* When someone clicks on Bought */
+    $('#useModal input#quantity').on('input',function(e){
+      html = $("#original_q").html();
+
+      q = parseInt(html.split('/')[1].split(' ')[0]);
+      unit = html.split('/')[1].split(' ')[1];
+      val = $('#useModal input#quantity').val();
+      res = q-val;
+      if (q - val < 0 | val <= 0){
+        $('#useModal input#quantity').css('color', 'red');
+        $('#useModal #useitem').prop('disabled', true);
+        if (q - val < 0)
+          res = 0;
+        else if (val < 0){
+          res = q;
+        }
+      }
+      else {
+        $('#useModal input#quantity').css('color', 'black')
+        $('#useModal #useitem').prop('disabled', false);
+      }
+      msg = 'Quantité restante: ' + String(res)  +'/'+ q + ' ' + unit;
+      $("#original_q").html(msg);
+    })
+
+    /* When someone clicks on Use */
     function click_use() {
       data = $(this).parent().parent().data('data');
+      items = data.split(';');
+      $('input#textbox').val(items[0]);
+      $('input#quantity').val('');
 
-      $('input#textbox').val(data)
+
+      $("h5#itemtitle").text(items[0]);
+      msg = 'Quantité restante: ' + items[1] +'/'+ items[1] + ' ' + items[3];
+      $("#original_q").html(msg);
+      //$("#quantity").val(items[1]);
+      $('#useModal').attr("data-data", data);
+      $('#useModal #useitem').prop('disabled', true);
       $('#useModal').modal('show');
     }
 
     /* When someone clicks on Removed */
     function click_removed() {
-      console.log($(this).parent().parent().data('data'));
-      click_badge($(this), '/fridge', 'remove');
+      what = $(this).parent().parent().data('data');
+
+      click_badge(what, '/fridge', 'remove');
 
     }
 
-    function click_badge(item, url, action) {
+    function validate_ed(n){
+
+      if (n.length != 8)
+        return false;
+      dd = parseInt(n[0])*10 + parseInt(n[1]);
+      mm = parseInt(n[2])*10 + parseInt(n[3]);
+      yyyy = parseInt(n[4])*1000 + parseInt(n[5])*100 + parseInt(n[6])*10 + parseInt(n[7]);
+      console.log(String(dd) + ";" + String(mm) + ";" + String(yyyy));
+      date = new Date(String(yyyy) + ';' + String(mm) + ';' + String(dd));
+      console.log(date);
+      d = new Date();
+      if (isNaN(date) == true | date - d < 0)
+        return false;
+      else
+        return n;
+    }
+
+    function click_badge(what, url, action) {
       if (action == 'remove'){
-        what = $(this).parent().parent().data('data');
+        console.log(what);
       }
       $.ajax({
         type: "POST",
@@ -186,6 +238,7 @@
         success: function(data) {
           console.log(data)
           if (data[0] == false) {
+            $('p#errormsg').html(data[1]);
             $('#notfoundModal').modal('show');
             return true;
           } else {
@@ -193,7 +246,7 @@
             console.log(data)
             $("div#itemlist").html(html)
             $("span.bg-danger").click(click_removed);
-            $("span.bg-success").click(click_bought)
+            $("span.bg-success").click(click_use)
             return true;
           }
         },
@@ -215,6 +268,10 @@
       /* Clicking on the big Add button */
       if (id == "addtofridge") {
         console.log(id);
+        $("input#textbox").val("");
+        $("input#quantity").val("");
+        $("input#expirydate").val("");
+        $('#unitg').click();
         options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
         html = '';
         options.forEach(function(v) {
@@ -230,41 +287,101 @@
     /* Adding to the shopping list */
     $('button#savetofridge').click(function() {
       what = $("input#textbox").val();
+      if (what == '' | what.indexOf(';') > -1){
+        $('p#errormsg').html('Intitulé de l\'article invalide.')
+        $('#notfoundModal').modal('show');
+      }
       q = $("input#quantity").val();
-      ed = $("input#expirydate").val();
-      unittype = $('#unittype input:radio:checked').attr('data-value');
-      reshop = $('#flexSwitch')[0].hasAttribute('checked');
+      if (q < 0){
+        $('p#errormsg').html('La quantité doit être positive.')
+        $('#notfoundModal').modal('show');
+     }
+      ed = validate_ed($("input#expirydate").val());
+      if (ed == false){
+         $('p#errormsg').html('Date d\'expiration invalide.')
+         $('#notfoundModal').modal('show');
+      }
+      else {
+        unittype = $('#unittype input:radio:checked').attr('data-value');
+        reshop = $('#flexSwitch')[0].hasAttribute('checked');
 
-      what = what + ';' + q + ';' + ed + ';' + unittype;
-      console.log(what);
-      $.ajax({
-        type: "POST",
-        url: "/add",
-        data: {
-          "what": what,
-          "to": "fridge"
-        },
-        dataType: 'json',
-        success: function(data) {
-          console.log(data)
-          if (data[0] == false) {
-            $('#notfoundModal').modal('show');
-            return true;
-          } else {
-            html = data[1];
+        what = what + ';' + q + ';' + q + ';' + unittype + ';' + ed ;
+        console.log(what);
+        $.ajax({
+          type: "POST",
+          url: "/add",
+          data: {
+            "what": what,
+            "to": "fridge"
+          },
+          dataType: 'json',
+          success: function(data) {
             console.log(data)
-            $("div#itemlist").html(html)
-            $("span.bg-danger").click(click_removed);
-            $("span.bg-success").click(click_bought);
+            if (data[0] == false) {
+              $('#notfoundModal').modal('show');
+              return true;
+            } else {
+              html = data[1];
+              console.log(data)
+              $("div#itemlist").html(html)
+              $("span.bg-danger").click(click_removed);
+              $("span.bg-success").click(click_use);
 
-            return true;
+              return true;
+            }
+          },
+          error: function(data) {
+            console.log(data);
           }
-        },
-        error: function(data) {
-          console.log(data);
-        }
+        });
+      }
       });
-    });
+
+      /* Use item from fridge: save */
+      $('button#useitem').click(function() {
+        item = $("#useModal input#textbox").val();
+        used_q = parseInt($("#useModal input#quantity").val());
+        html = $("#original_q").html();
+        data = $("#useModal").attr('data-data');
+        original_q = parseInt(data.split(';')[2]);
+        unit = data.split(';')[3];
+        ed = data.split(';')[4];
+
+
+        q = parseInt(html.split('/')[1].split(' ')[0]);
+        unit = html.split('/')[1].split(' ')[1];
+        what = item + ';' + String(q - used_q) + ';' + String(original_q) + ';' + unit + ';' + ed;
+        $("#useModal").attr('data-data', what);
+
+        $.ajax({
+          type: "POST",
+          url: "/edit",
+          data: {
+            "what": what,
+            "to": "fridge",
+            "item": data
+          },
+          dataType: 'json',
+          success: function(data) {
+            if (data[0] == false) {
+              $('#errormsg').html('Erreur');
+              $('#notfoundModal').modal('show');
+              return true;
+            } else {
+              html = data[1];
+              $("div#itemlist").replaceWith(html)
+              $("span.bg-danger").click(click_removed);
+              $("span.bg-success").click(click_use);
+
+              return true;
+            }
+          },
+          error: function(data) {
+            console.log(data);
+          }
+        });
+      });
+
   </script>
 </body>
 
