@@ -1,0 +1,119 @@
+
+  <!-- Modal window: Item not found (somebody removed it at the same time -->
+  <div id="notfoundModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+          <h4 class="modal-title"></h4>
+        </div>
+        <div class="modal-body">
+          <p id="errormsg">Item not found.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal window: Adding item to fridge list  -->
+  <div id="addModalFridge" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <input id="textbox" input class="form-control" list="whattoaddfridge" name="browser">
+            <datalist id="whattoaddfridge">
+            </datalist>
+          </p>
+          <p>
+            <input id='expirydate' input class="form-control" type="number" placeholder="JJMMAAAA" aria-label="Expiry date">
+          </p>
+          <p>
+            <input id='current_quantity' input class="form-control" type="number" placeholder="Quantité actuelle" aria-label="Quantité actuelle">
+          </p>
+          <p>
+            <input id='quantity' input class="form-control" type="number" placeholder="Quantité" aria-label="Quantité">
+          </p>
+          <p>
+          <div id="unittype" class="btn-group" role="group" aria-label="Units">
+            <input type="radio" data-value="g" class="btn-check" name="btnradio1" id="unitg" autocomplete="off" checked>
+            <label class="btn btn-outline-secondary" for="unitg">g</label>
+            <input type="radio" data-value="mL" class="btn-check" name="btnradio1" id="unitml" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="unitml">mL</label>
+            <input type="radio" data-value="units" class="btn-check" name="btnradio1" id="unitunit" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="unitunit">unités</label>
+
+          </div>
+          </p>
+          <p>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitch" checked>
+            <label class="form-check-label" for="flexSwitchCheckDefault">Ajouter au frigo</label>
+          </div>
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button id="savetofridge" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+          <button id="deletefromfridge" type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal window: Use item from fridge list  -->
+  <div id="useModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 id="itemtitle" class="modal-title"></h5>
+          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>
+            <input id="textbox" input class="form-control" list="whattoaddshopping" name="browser">
+            <datalist id="whattousefridge">
+            </datalist>
+          </p>
+          <p>
+            <label id="original_q" for="quantity">unité</label>
+            <input id='quantity' input class="form-control" type="number" placeholder="Quantité utilisée" aria-label="Quantité">
+
+          </p>
+          <p>
+          <div class="form-check form-switch">
+            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+            <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses</label>
+          </div>
+          </p>
+        </div>
+
+        <div class="modal-footer">
+          <button id="useitem" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal window: Readd item to shopping list  -->
+  <div id="reshopModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-body">
+          <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses ?</label>
+        </div>
+
+        <div class="modal-footer">
+          <button id="reshop" type="button" class="btn btn-success" data-bs-dismiss="modal">Oui</button>
+          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Non</button>
+        </div>
+      </div>
+    </div>
+  </div>

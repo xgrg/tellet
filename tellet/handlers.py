@@ -61,47 +61,51 @@ class MainHandler(BaseHandler):
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
         df = df.sort_index(ascending=False)
         rp = df.query('action == "did" & where == "reports"')
-        rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
 
+        callout = ''
+        if not rp.empty:
+            rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
 
-        # last poubelle
-        rp = df.query('action == "did" & where == "reports"')
-        rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
-        lp = rp.query('what2 == "poubelles"').iloc[0]
-        dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
-        comments = lp.what.split(';')[-1]
-        if comments != '': comments = ' ' + comments
-        opt = {'ndays': dt.days,
-               'who': lp.who,
-               'comments': comments,
-               'color': get_color_ndays(dt.days, [7,15], False)}
-        callout = '<div class="bs-callout bs-callout-info {color}">'\
-                  'Dernière poubelle il y a <strong>{ndays} jours</strong>'\
-                  ' ({who}{comments})</div>'''.format(**opt)
+            # last poubelle
+            lp = rp.query('what2 == "poubelles"')
+            if not lp.empty:
+                lp = lp.iloc[0]
+                dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
+                comments = lp.what.split(';')[-1]
+                if comments != '': comments = ' ' + comments
+                opt = {'ndays': dt.days,
+                       'who': lp.who,
+                       'comments': comments,
+                       'color': get_color_ndays(dt.days, [7,15], False)}
+                callout = '<div class="bs-callout bs-callout-info {color}">'\
+                          'Dernière poubelle il y a <strong>{ndays} jours</strong>'\
+                          ' ({who}{comments})</div>'''.format(**opt)
 
-        # last wc
-        lw = rp.query('what2 == "wc"').iloc[0]
-        dt = datetime.now() - datetime.strptime(lw.name, '%Y%m%d_%H%M%S')
-        comments = lw.what.split(';')[-1]
-        if comments != '': comments = ' ' + comments
-        opt = {'ndays': dt.days,
-               'who': lw.who,
-               'comments': comments,
-               'color': get_color_ndays(dt.days, [7, 15], True)}
-        callout = callout + '<div class="bs-callout {color}">'\
-                  'Dernier nettoyage WC il y a <strong>{ndays} jours</strong>'\
-                  ' ({who}{comments})</div>'''.format(**opt)
+            # last wc
+            lw = rp.query('what2 == "wc"')
+            if not lw.empty:
+                lw = lw.iloc[0]
+                dt = datetime.now() - datetime.strptime(lw.name, '%Y%m%d_%H%M%S')
+                comments = lw.what.split(';')[-1]
+                if comments != '': comments = ' ' + comments
+                opt = {'ndays': dt.days,
+                       'who': lw.who,
+                       'comments': comments,
+                       'color': get_color_ndays(dt.days, [7, 15], True)}
+                callout = callout + '<div class="bs-callout {color}">'\
+                          'Dernier nettoyage WC il y a <strong>{ndays} jours</strong>'\
+                          ' ({who}{comments})</div>'''.format(**opt)
 
-        # is it laundry day
-        wd = datetime.now().weekday()
-        if wd == 2:
-            callout = callout + '<div class="bs-callout bs-callout-warning">'\
-                  '<strong>Jour de lessive</strong> &nbsp; '\
-                  '<span class="badge bg-warning">Rappel</span></div>'''
-        elif wd == 1:
-            callout = callout + '<div class="bs-callout bs-callout-warning">'\
-                  'Demain jour de lessive &nbsp;'\
-                  '<span class="badge bg-warning">Rappel</span></div>'''
+            # is it laundry day
+            wd = datetime.now().weekday()
+            if wd == 2:
+                callout = callout + '<div class="bs-callout bs-callout-warning">'\
+                      '<strong>Jour de lessive</strong> &nbsp; '\
+                      '<span class="badge bg-warning">Rappel</span></div>'''
+            elif wd == 1:
+                callout = callout + '<div class="bs-callout bs-callout-warning">'\
+                      'Demain jour de lessive &nbsp;'\
+                      '<span class="badge bg-warning">Rappel</span></div>'''
 
         self.render("html/index.html", version=version, callout=callout)
 
@@ -114,14 +118,17 @@ def get_list_html(j, action_label, fridge=False):
         sl = []
         for each in j:
             label, q, original_q, unit, ed = each.split(';')
-            print(ed)
-            ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
+            if ed != -1:
+                ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
+                ed = '; expire le %s' % ed
+            else:
+                ed = ''
 
             sl.append('''<li class="list-group-item d-flex justify-content-between
                   align-items-center" data-data="%s">
-                    %s &#8211; %s/%s %s &#8211; expire le %s
+                    %s &#8211; %s/%s %s &#8211%s
                     <span>
-                    <span class="badge bg-danger">Retirer</span>
+                    <span class="badge bg-danger">Editer</span>
                     <span class="badge bg-success">%s </span></span>
                   </li>''' % (each, label, q, original_q, unit, ed, action_label))
     else:
@@ -129,7 +136,7 @@ def get_list_html(j, action_label, fridge=False):
               align-items-center">
                 %s
                 <span>
-                <span class="badge bg-danger">Retirer</span>
+                <span class="badge bg-danger">Editer</span>
                 <span class="badge bg-success">%s </span></span>
               </li>''' % (each, action_label) for each in j]
     list_html = '<div id="itemlist"><ul class="list-group">%s</ul></div>' % ''.join(sl)
@@ -168,7 +175,12 @@ class ShoppingHandler(BaseHandler, ListHandler):
         print('\n*** %s is shopping.' % username)
         shopping = json.load(open(self.fp))['shopping']
         sl = get_list_html(shopping, action_label='Acheté')
-        self.render("html/shopping.html", list=sl)
+        from glob import glob
+        files = glob(op.join(op.dirname(op.dirname(__file__)),
+                              'web/html/modals/*.html'))
+        modals = '\n'.join([open(e).read() for e in files])
+
+        self.render("html/shopping.html", list=sl, modals=modals)
 
     def post(self):
         username = str(self.current_user[1:-1], 'utf-8')
@@ -200,7 +212,9 @@ class FridgeHandler(BaseHandler, ListHandler):
         print('\n*** %s is looking into the fridge.' % username)
         shopping = json.load(open(self.fp))['fridge']
         sl = get_list_html(shopping, action_label='Utiliser', fridge=True)
-        self.render("html/fridge.html", list=sl)
+        modals = open(op.join(op.dirname(op.dirname(__file__)),
+                              'web/html/modals/fridge.html')).read()
+        self.render("html/fridge.html", list=sl, modals=modals)
 
     def post(self):
         username = str(self.current_user[1:-1], 'utf-8')
@@ -273,13 +287,18 @@ class AddHandler(BaseHandler):
         username = str(self.current_user[1:-1], 'utf-8')
         to = str(self.get_argument("to", ""))
         what = str(self.get_argument("what", ""))
+        then = str(self.get_argument("then", to))
 
         print((username, to, what.split('\n')[0]))
         if to in ['shopping', 'todo', 'fridge']:
             actions_labels = {'shopping': 'Acheté', 'todo': 'Fait', 'fridge':'Utiliser'}
+
             shopping = self.add_to_list(what, to)
+            if then != to:
+                j = json.load(open(self.fp))
+                shopping = j[then]
             sl = get_list_html(shopping, action_label=actions_labels[to],
-                               fridge=to=='fridge')
+                               fridge=then=='fridge')
 
             self.write(json.dumps([True, sl]))
         else: # log
@@ -318,11 +337,16 @@ class EditHandler(BaseHandler):
         to = str(self.get_argument("to", ""))
         what = str(self.get_argument("what", ""))
         item = str(self.get_argument("item", ""))
+        then = str(self.get_argument("then", to))
+        print(then, to)
 
         print((username, to, what.split('\n')[0]))
         if to in ['shopping', 'todo', 'fridge']:
             actions_labels = {'shopping': 'Acheté', 'todo': 'Fait', 'fridge':'Utiliser'}
             shopping = self.add_to_list(what, to, item)
+            if then != to:
+                j = json.load(open(self.fp))
+                shopping = j[then]
             sl = get_list_html(shopping, action_label=actions_labels[to],
                                fridge=to=='fridge')
 

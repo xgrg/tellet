@@ -13,6 +13,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="{{static_url("js/modals/fridge.js")}}"></script>
 
   <link href="css/style.css" rel="stylesheet">
 
@@ -40,233 +41,16 @@
 
     </div>
   </div>
-
-  <!-- Modal window: Item not found (somebody removed it at the same time -->
-  <div id="notfoundModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-          <h4 class="modal-title"></h4>
-        </div>
-        <div class="modal-body">
-          <p id="errormsg">Item not found.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal window: Adding item to fridge list  -->
-  <div id="addModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>
-            <input id="textbox" input class="form-control" list="whattoaddfridge" name="browser">
-            <datalist id="whattoaddfridge">
-            </datalist>
-          </p>
-          <p>
-            <input id='expirydate' input class="form-control" type="number" placeholder="JJMMAAAA" aria-label="Expiry date">
-          </p>
-          <p>
-            <input id='quantity' input class="form-control" type="number" placeholder="Quantité" aria-label="Quantité">
-          </p>
-          <p>
-          <div id="unittype" class="btn-group" role="group" aria-label="Units">
-            <input type="radio" data-value="g" class="btn-check" name="btnradio1" id="unitg" autocomplete="off" checked>
-            <label class="btn btn-outline-secondary" for="unitg">g</label>
-            <input type="radio" data-value="mL" class="btn-check" name="btnradio1" id="unitml" autocomplete="off">
-            <label class="btn btn-outline-secondary" for="unitml">mL</label>
-            <input type="radio" data-value="units" class="btn-check" name="btnradio1" id="unitunit" autocomplete="off">
-            <label class="btn btn-outline-secondary" for="unitunit">unités</label>
-
-          </div>
-          </p>
-          <p>
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitch" checked>
-            <label class="form-check-label" for="flexSwitchCheckDefault">Ajouter au frigo</label>
-          </div>
-          </p>
-        </div>
-
-        <div class="modal-footer">
-          <button id="savetofridge" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal window: Use item from fridge list  -->
-  <div id="useModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 id="itemtitle" class="modal-title"></h5>
-          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p>
-            <input id="textbox" input class="form-control" list="whattoaddshopping" name="browser">
-            <datalist id="whattousefridge">
-            </datalist>
-          </p>
-          <p>
-            <label id="original_q" for="quantity">unité</label>
-            <input id='quantity' input class="form-control" type="number" placeholder="Quantité utilisée" aria-label="Quantité">
-
-          </p>
-          <p>
-          <div class="form-check form-switch">
-            <input class="form-check-input" type="checkbox" role="switch" id="flexSwitchCheckDefault">
-            <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses</label>
-          </div>
-          </p>
-        </div>
-
-        <div class="modal-footer">
-          <button id="useitem" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal window: Readd item to shopping list  -->
-  <div id="reshopModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body">
-          <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses ?</label>
-        </div>
-
-        <div class="modal-footer">
-          <button id="reshop" type="button" class="btn btn-success" data-bs-dismiss="modal">Oui</button>
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Non</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  {{modals}}
   <script>
-    $('#useModal input#quantity').on('input',function(e){
-      html = $("#original_q").html();
+    $(document).ready(function() {
+      $('#useModal input#quantity').on('input', update_quantity)
 
-      q = parseInt(html.split('/')[1].split(' ')[0]);
-      unit = html.split('/')[1].split(' ')[1];
-      val = $('#useModal input#quantity').val();
-      res = q-val;
-      if (q - val < 0 | val <= 0){
-        $('#useModal input#quantity').css('color', 'red');
-        $('#useModal #useitem').prop('disabled', true);
-        if (q - val < 0)
-          res = 0;
-        else if (val < 0){
-          res = q;
-        }
-      }
-      else {
-        $('#useModal input#quantity').css('color', 'black')
-        $('#useModal #useitem').prop('disabled', false);
-      }
-      msg = 'Quantité restante: ' + String(res)  +'/'+ q + ' ' + unit;
-      $("#original_q").html(msg);
-    })
-
-    /* When someone clicks on Use */
-    function click_use() {
-      data = $(this).parent().parent().data('data');
-      items = data.split(';');
-      $('input#textbox').val(items[0]);
-      $('input#quantity').val('');
+      $("span.bg-danger").click(click_edit_fridge)
+      $("span.bg-success").click(click_use)
 
 
-      $("h5#itemtitle").text(items[0]);
-      msg = 'Quantité restante: ' + items[1] +'/'+ items[1] + ' ' + items[3];
-      $("#original_q").html(msg);
-      //$("#quantity").val(items[1]);
-      $('#useModal').attr("data-data", data);
-      $('#useModal #useitem').prop('disabled', true);
-      $('#useModal').modal('show');
-    }
-
-    /* When someone clicks on Removed */
-    function click_removed() {
-      what = $(this).parent().parent().data('data');
-
-      click_badge(what, '/fridge', 'remove');
-
-    }
-
-    function validate_ed(n){
-
-      if (n.length != 8)
-        return false;
-      dd = parseInt(n[0])*10 + parseInt(n[1]);
-      mm = parseInt(n[2])*10 + parseInt(n[3]);
-      yyyy = parseInt(n[4])*1000 + parseInt(n[5])*100 + parseInt(n[6])*10 + parseInt(n[7]);
-      console.log(String(dd) + ";" + String(mm) + ";" + String(yyyy));
-      date = new Date(String(yyyy) + ';' + String(mm) + ';' + String(dd));
-      console.log(date);
-      d = new Date();
-      if (isNaN(date) == true | date - d < 0)
-        return false;
-      else
-        return n;
-    }
-
-    function click_badge(what, url, action) {
-      if (action == 'remove'){
-        console.log(what);
-      }
-      $.ajax({
-        type: "POST",
-        url: url,
-        dataType: 'json',
-        data: {
-          "what": what,
-          "action": action
-        },
-        success: function(data) {
-          console.log(data)
-          if (data[0] == false) {
-            $('p#errormsg').html(data[1]);
-            $('#notfoundModal').modal('show');
-            return true;
-          } else {
-            html = data[1];
-            console.log(data)
-            $("div#itemlist").html(html)
-            $("span.bg-danger").click(click_removed);
-            $("span.bg-success").click(click_use)
-            return true;
-          }
-        },
-        error: function(data) {
-          console.log(data);
-        }
-      });
-    }
-
-
-    $("span.bg-danger").click(click_removed)
-    $("span.bg-success").click(click_use)
-
-
-    $("a").click(function(e) {
-      id = $(this).attr('id');
-      e.preventDefault();
-
-      /* Clicking on the big Add button */
-      if (id == "addtofridge") {
+      $("#addtofridge").click(function() {
         console.log(id);
         $("input#textbox").val("");
         $("input#quantity").val("");
@@ -278,110 +62,20 @@
           html += '<option value="' + v + '">';
         });
         $('datalist#whattoaddfridge').html(html)
-        $('#addModal').modal('show');
-      }
-    })
-
-    $('a#logout').unbind('click')
-
-    /* Adding to the shopping list */
-    $('button#savetofridge').click(function() {
-      what = $("input#textbox").val();
-      if (what == '' | what.indexOf(';') > -1){
-        $('p#errormsg').html('Intitulé de l\'article invalide.')
-        $('#notfoundModal').modal('show');
-      }
-      q = $("input#quantity").val();
-      if (q < 0){
-        $('p#errormsg').html('La quantité doit être positive.')
-        $('#notfoundModal').modal('show');
-     }
-      ed = validate_ed($("input#expirydate").val());
-      if (ed == false){
-         $('p#errormsg').html('Date d\'expiration invalide.')
-         $('#notfoundModal').modal('show');
-      }
-      else {
-        unittype = $('#unittype input:radio:checked').attr('data-value');
-        reshop = $('#flexSwitch')[0].hasAttribute('checked');
-
-        what = what + ';' + q + ';' + q + ';' + unittype + ';' + ed ;
-        console.log(what);
-        $.ajax({
-          type: "POST",
-          url: "/add",
-          data: {
-            "what": what,
-            "to": "fridge"
-          },
-          dataType: 'json',
-          success: function(data) {
-            console.log(data)
-            if (data[0] == false) {
-              $('#notfoundModal').modal('show');
-              return true;
-            } else {
-              html = data[1];
-              console.log(data)
-              $("div#itemlist").html(html)
-              $("span.bg-danger").click(click_removed);
-              $("span.bg-success").click(click_use);
-
-              return true;
-            }
-          },
-          error: function(data) {
-            console.log(data);
-          }
-        });
-      }
+        $('#deletefromfridge').hide();
+        $('#current_quantity').hide();
+        $('#addModalFridge').modal('show');
       });
+
+      /* Adding to the shopping list */
+      $('button#savetofridge').click(function() {
+        saveToFridge("fridge")
+      });
+      $('#deletefromfridge').click(click_removed);
 
       /* Use item from fridge: save */
-      $('button#useitem').click(function() {
-        item = $("#useModal input#textbox").val();
-        used_q = parseInt($("#useModal input#quantity").val());
-        html = $("#original_q").html();
-        data = $("#useModal").attr('data-data');
-        original_q = parseInt(data.split(';')[2]);
-        unit = data.split(';')[3];
-        ed = data.split(';')[4];
-
-
-        q = parseInt(html.split('/')[1].split(' ')[0]);
-        unit = html.split('/')[1].split(' ')[1];
-        what = item + ';' + String(q - used_q) + ';' + String(original_q) + ';' + unit + ';' + ed;
-        $("#useModal").attr('data-data', what);
-
-        $.ajax({
-          type: "POST",
-          url: "/edit",
-          data: {
-            "what": what,
-            "to": "fridge",
-            "item": data
-          },
-          dataType: 'json',
-          success: function(data) {
-            if (data[0] == false) {
-              $('#errormsg').html('Erreur');
-              $('#notfoundModal').modal('show');
-              return true;
-            } else {
-              html = data[1];
-              $("div#itemlist").replaceWith(html)
-              $("span.bg-danger").click(click_removed);
-              $("span.bg-success").click(click_use);
-
-              return true;
-            }
-          },
-          error: function(data) {
-            console.log(data);
-          }
-        });
-      });
-
+      $('button#useitem').click(save_use_fridge);
+    });
   </script>
 </body>
 

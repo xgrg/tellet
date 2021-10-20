@@ -13,6 +13,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+  <script type="text/javascript" src="{{static_url("js/modals/fridge.js")}}"></script>
 
   <link href="css/style.css" rel="stylesheet">
 
@@ -26,9 +27,10 @@
       <div class="col-md-6">
         <a id="addshopping" href="#" class="btn btn-danger btn-lg" role="button">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16">
-            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
+            <path
+              d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5zM3.102 4l1.313 7h8.17l1.313-7H3.102zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4zm-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2zm7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" />
           </svg>
-           <br />Ajouter</a>
+          <br />Ajouter</a>
         <br><br>
 
         {{list}}
@@ -39,66 +41,43 @@
 
     </div>
   </div>
-
-  <!-- Modal window: Item not found (somebody removed it at the same time -->
-  <div id="notfoundModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-          <h4 class="modal-title"></h4>
-        </div>
-        <div class="modal-body">
-          <p>Item not found.</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal window: Adding item to shopping list  -->
-  <div id="buyModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <input id="textbox" input class="form-control" list="whattobuy" name="browser">
-          <datalist id="whattobuy">
-          </datalist>
-        </div>
-        <div class="modal-footer">
-          <button id="addtobuy" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
+  {{modals}}
 
   <script>
     /* When someone clicks on Bought */
     function click_bought() {
-      console.log($(this).parent().parent().text());
-      click_badge($(this), '/shopping', 'bought');
+      data = $(this).parent().parent().text();
+      console.log(data);
+      what = data.split('\n')[1].trim();
+      $("#addModalFridge input#textbox").val(what);
+      $("#addModalFridge input#quantity").val("");
+      $("#addModalFridge input#current_quantity").hide();
+      $("#addModalFridge input#expirydate").val("");
+      $('#addModalFridge #unitg').click();
+      $("#deletefromfridge").hide()
+      $('#addModalFridge').modal('show');
     }
 
-    /* When someone clicks on Removed */
-    function click_removed() {
-      console.log($(this).parent().parent().text());
-      click_badge($(this), '/shopping', 'remove');
+    /* When someone clicks on Edit */
+    function click_edit_shopping() {
+      item = $(this);
+      what = item.parent().parent().text();
+      what = what.split('\n')[1].trim();
+      console.log(what);
+      $('#buyModal').attr('data-data', what);
+      $("input#textbox").val(what);
+      $('#deletefromshopping').show();
 
+      $('#buyModal').modal('show');
     }
 
-    function click_badge(item, url, action) {
+    function click_badge_shopping(item, url, action) {
       $.ajax({
         type: "POST",
         url: url,
         dataType: 'json',
         data: {
-          "what": item.parent().parent().text(),
+          "what": item,
           "action": action
         },
         success: function(data) {
@@ -110,7 +89,7 @@
             html = data[1];
             console.log(data)
             $("div#itemlist").html(html)
-            $("span.bg-danger").click(click_removed);
+            $("span.bg-danger").click(click_edit_shopping);
             $("span.bg-success").click(click_bought)
             return true;
           }
@@ -122,39 +101,58 @@
     }
 
 
-    $("span.bg-danger").click(click_removed)
+    $("span.bg-danger").click(click_edit_shopping)
     $("span.bg-success").click(click_bought)
+    $('#deletefromshopping').click(function() {
+      item = $(this).parent().parent().parent().parent();
+      console.log(item)
+      click_badge_shopping(item.attr('data-data'), '/shopping', 'removed');
+    });
 
+    $("#addshopping").click(function() {
+      console.log(id);
+      $('#buyModal input#textbox').val('')
 
-    $("a").click(function(e) {
-      id = $(this).attr('id');
-      e.preventDefault();
+      options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
+      html = '';
+      options.forEach(function(v) {
+        html += '<option value="' + v + '">';
+      });
+      $('datalist#whattobuy').html(html)
+      $('#deletefromshopping').hide();
 
-      /* Clicking on the big Add button */
-      if (id == "addshopping") {
-        console.log(id);
-        options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
-        html = '';
-        options.forEach(function(v) {
-          html += '<option value="' + v + '">';
-        });
-        $('datalist#whattobuy').html(html)
-        $('#buyModal').modal('show');
-      }
-    })
+      $('#buyModal').modal('show');
+    });
 
-    $('a#logout').unbind('click')
+    $('button#savetofridge').click(function() {
+      saveToFridge("shopping");
+    });
+
 
     /* Adding to the shopping list */
     $('button#addtobuy').click(function() {
-      what = $("input#textbox").val();
+      what = $("#buyModal input#textbox").val();
+      console.log(what);
+      data = {
+        "what": what,
+        "to": "shopping"
+      }
+      action = '/add'
+      if ($('#deletefromshopping').is(":visible")) {
+        item = $("#buyModal").attr('data-data');
+
+        action = '/edit'
+        data = {
+          "what": what,
+          "to": "shopping",
+          "item": item
+        }
+      }
+
       $.ajax({
         type: "POST",
-        url: "/add",
-        data: {
-          "what": what,
-          "to": "shopping"
-        },
+        url: action,
+        data: data,
         dataType: 'json',
         success: function(data) {
           console.log(data)
@@ -164,8 +162,8 @@
           } else {
             html = data[1];
             console.log(data)
-            $("div#itemlist").html(html)
-            $("span.bg-danger").click(click_removed);
+            $("div#itemlist").replaceWith(html)
+            $("span.bg-danger").click(click_edit_shopping);
             $("span.bg-success").click(click_bought);
 
             return true;
