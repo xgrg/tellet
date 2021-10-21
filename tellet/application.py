@@ -42,7 +42,7 @@ class Application(tornado.web.Application):
                     (r"/auth/logout", h.AuthLogoutHandler)]
 
         s = {
-            "autoreload": True,
+            "autoreload": False,
             "template_path": TEMPLATE_PATH,
             "static_path": STATIC_PATH,
             "debug": DEBUG,
