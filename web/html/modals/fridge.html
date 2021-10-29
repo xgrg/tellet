@@ -22,6 +22,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
+          <h5 id="itemtitle" class="modal-title"></h5>
           <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
         </div>
         <div class="modal-body">
@@ -31,31 +32,32 @@
             </datalist>
           </p>
           <p>
+            <label for="expirydate">Date d'expiration (laisser vide si pas de date)</label>
             <input id='expirydate' input class="form-control" type="number" placeholder="JJMMAAAA" aria-label="Expiry date">
           </p>
           <p>
+            <label for="quantity" id="label_current_quantity">Quantité actuelle</label>
             <input id='current_quantity' input class="form-control" type="number" placeholder="Quantité actuelle" aria-label="Quantité actuelle">
           </p>
           <p>
+            <label for="quantity" id="label_quantity">Quantité initiale</label>
             <input id='quantity' input class="form-control" type="number" placeholder="Quantité" aria-label="Quantité">
           </p>
           <p>
           <div id="unittype" class="btn-group" role="group" aria-label="Units">
-            <input type="radio" data-value="g" class="btn-check" name="btnradio1" id="unitg" autocomplete="off" checked>
-            <label class="btn btn-outline-secondary" for="unitg">g</label>
-            <input type="radio" data-value="mL" class="btn-check" name="btnradio1" id="unitml" autocomplete="off">
-            <label class="btn btn-outline-secondary" for="unitml">mL</label>
+            <input type="radio" data-value="pc" class="btn-check" name="btnradio1" id="unitpc" autocomplete="off">
+            <label class="btn btn-outline-secondary" for="unitpc">%</label>
             <input type="radio" data-value="units" class="btn-check" name="btnradio1" id="unitunit" autocomplete="off">
             <label class="btn btn-outline-secondary" for="unitunit">unités</label>
 
           </div>
           </p>
-          <p>
+          <!-- <p>
           <div class="form-check form-switch">
             <input class="form-check-input" type="checkbox" role="switch" id="flexSwitch" checked>
             <label class="form-check-label" for="flexSwitchCheckDefault">Ajouter au frigo</label>
           </div>
-          </p>
+          </p> -->
         </div>
 
         <div class="modal-footer">
@@ -102,7 +104,7 @@
     </div>
   </div>
 
-  <!-- Modal window: Readd item to shopping list  -->
+  <!-- Modal window: Re-add item to shopping list  -->
   <div id="reshopModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">

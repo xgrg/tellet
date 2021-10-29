@@ -118,15 +118,16 @@ def get_list_html(j, action_label, fridge=False):
         sl = []
         for each in j:
             label, q, original_q, unit, ed = each.split(';')
-            if ed != -1:
-                ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
-                ed = '; expire le %s' % ed
-            else:
-                ed = ''
+            if ed != '':
+                try:
+                    ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
+                    ed = ' &#8211 expire le %s' % ed
+                except ValueError:
+                    ed = ' &#8211 <span style="color:red">%s</span>' % ed
 
             sl.append('''<li class="list-group-item d-flex justify-content-between
                   align-items-center" data-data="%s">
-                    %s &#8211; %s/%s %s &#8211%s
+                    %s &#8211; %s/%s %s%s
                     <span>
                     <span class="badge bg-danger">Editer</span>
                     <span class="badge bg-success">%s </span></span>
@@ -212,8 +213,12 @@ class FridgeHandler(BaseHandler, ListHandler):
         print('\n*** %s is looking into the fridge.' % username)
         shopping = json.load(open(self.fp))['fridge']
         sl = get_list_html(shopping, action_label='Utiliser', fridge=True)
-        modals = open(op.join(op.dirname(op.dirname(__file__)),
-                              'web/html/modals/fridge.html')).read()
+        # modals = open(op.join(op.dirname(op.dirname(__file__)),
+        #                       'web/html/modals/fridge.html')).read()
+        from glob import glob
+        files = glob(op.join(op.dirname(op.dirname(__file__)),
+                              'web/html/modals/*.html'))
+        modals = '\n'.join([open(e).read() for e in files])
         self.render("html/fridge.html", list=sl, modals=modals)
 
     def post(self):

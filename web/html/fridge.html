@@ -49,7 +49,6 @@
       $("span.bg-danger").click(click_edit_fridge)
       $("span.bg-success").click(click_use)
 
-
       $("#addtofridge").click(function() {
         $("input#textbox").val("");
         $("input#quantity").val("");
@@ -62,14 +61,24 @@
         });
         $('datalist#whattoaddfridge').html(html)
         $('#deletefromfridge').hide();
+        $('#quantity').show();
+        $('#label_quantity').show();
         $('#current_quantity').hide();
+        $('#label_current_quantity').hide();
         $('#addModalFridge').modal('show');
       });
 
-      /* Adding to the shopping list */
-      $('button#savetofridge').click(function() {
-        saveToFridge("fridge")
+      $("input#unitpc").click(function(){
+          $('#quantity').val(100);
+          $('#quantity').prop('disabled', true);
       });
+      $("input#unitunit").click(function(){
+          $('#quantity').val("");
+          $('#quantity').prop('disabled', false);
+      });
+
+      /* Adding to the shopping list */
+      $('button#savetofridge').click(function() {saveToFridge("fridge")});
       $('#deletefromfridge').click(click_removed);
 
       /* Use item from fridge: save */

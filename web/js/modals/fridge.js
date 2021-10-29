@@ -1,4 +1,3 @@
-
 function validate_ed(n) {
 
   if (n.length != 8)
@@ -23,7 +22,7 @@ function update_quantity(e) {
   unit = html.split('/')[1].split(' ')[1];
   val = $('#useModal input#quantity').val();
   res = q - val;
-  if (q - val < 0 | val <= 0) {
+  if (q - val < 0 | val < 0) {
     $('#useModal input#quantity').css('color', 'red');
     $('#useModal #useitem').prop('disabled', true);
     if (q - val < 0)
@@ -53,17 +52,20 @@ function click_edit_fridge() {
   ed = what[4];
   $("input#textbox").val(label);
   $("input#current_quantity").val(q);
-  $("input#quantity").val(original_q);
 
   $("input#expirydate").val(ed);
-  if (unit == 'g')
-    $('#unitg').click();
-  else if (unit == 'mL')
-    $('#unitml').click();
-  else if (unit == 'units')
+
+  if (unit == 'pc') {
+    $('#unitpc').click();
+    $("input#quantity").prop('disabled', true);
+  } else if (unit == 'units') {
     $('#unitunit').click();
+    $("input#quantity").prop('disabled', false);
+    $("input#quantity").val(original_q);
+  }
   $('#deletefromfridge').show();
   $('#current_quantity').show();
+  $("#label_current_quantity").show();
 
   $('#addModalFridge').modal('show');
 }
@@ -88,8 +90,11 @@ function click_use() {
   msg = 'Quantité restante: ' + items[1] + '/' + items[1] + ' ' + items[3];
   $("#original_q").html(msg);
   //$("#quantity").val(items[1]);
+  $("#useModal #quantity").prop('disabled', false);
+
   $('#useModal').attr("data-data", data);
   $('#useModal #useitem').prop('disabled', true);
+  $('#useModal input#flexSwitchCheckDefault').prop('checked', false);
   $('#useModal').modal('show');
 }
 
@@ -100,19 +105,23 @@ function saveToFridge(then) {
     $('#notfoundModal').modal('show');
   }
   q = $("input#quantity").val();
-  if (q < 0) {
+  if ($("input#current_quantity").is(':visible') == true)
+    q1 = $("input#current_quantity").val();
+  else
+    q1 = q;
+
+  ed = $("input#expirydate").val(); // skipping date validation
+
+  unittype = $('#unittype input:radio:checked').attr('data-value');
+  if (q < 0 | q1 < 0 | q == '' | q1 == ''){
     $('p#errormsg').html('La quantité doit être positive.')
     $('#notfoundModal').modal('show');
   }
-  ed = validate_ed($("input#expirydate").val());
-  if (ed == false) {
-    $('p#errormsg').html('Date d\'expiration invalide.')
+  else if (unittype == 'pc' & q1 > 100){
+    $('p#errormsg').html('Un pourcentage doit être inférieure à 100.')
     $('#notfoundModal').modal('show');
   } else {
-    unittype = $('#unittype input:radio:checked').attr('data-value');
-    reshop = $('#flexSwitch')[0].hasAttribute('checked');
-
-    what = what + ';' + q + ';' + q + ';' + unittype + ';' + ed;
+    what = what + ';' + q1 + ';' + q + ';' + unittype + ';' + ed;
     console.log(what);
     action = '/add'
     data = {
@@ -120,7 +129,7 @@ function saveToFridge(then) {
       "to": "fridge",
       "then": then
     }
-    if ($('#deletefromfridge').is(":visible")){
+    if ($('#deletefromfridge').is(":visible")) {
       item = $("#addModalFridge").attr('data-data');
 
       action = '/edit'
@@ -146,10 +155,9 @@ function saveToFridge(then) {
           console.log(data)
           $("div#itemlist").html(html)
           $("span.bg-danger").click(click_edit_fridge);
-          if (then == 'fridge'){
+          if (then == 'fridge') {
             $("span.bg-success").click(click_use);
-          }
-          else if (then == 'shopping'){
+          } else if (then == 'shopping') {
             $("span.bg-success").click(click_bought);
             click_badge_fridge(what.split(';')[0], '/shopping', 'bought');
           }
@@ -199,7 +207,7 @@ function click_badge_fridge(what, url, action) {
 }
 
 
-function save_use_fridge(){
+function save_use_fridge() {
   item = $("#useModal input#textbox").val();
   used_q = parseInt($("#useModal input#quantity").val());
   html = $("#original_q").html();
@@ -210,7 +218,7 @@ function save_use_fridge(){
   q = parseInt(html.split('/')[1].split(' ')[0]);
   unit = html.split('/')[1].split(' ')[1];
   what = item + ';' + String(q - used_q) + ';' + String(original_q) + ';' + unit + ';' + ed;
-  item =  $("#useModal").attr('data-data');
+  item = $("#useModal").attr('data-data');
   $("#useModal").attr('data-data', what);
 
   $.ajax({
@@ -232,6 +240,79 @@ function save_use_fridge(){
         $("div#itemlist").replaceWith(html)
         $("span.bg-danger").click(click_edit_fridge);
         $("span.bg-success").click(click_use);
+        reshop = $('#useModal input#flexSwitchCheckDefault').is(':checked');
+        if (reshop == true){
+          console.log('reshop')
+          item = what.split(';')[0];
+          console.log(what + ';' + item);
+          $('#buyModal input#textbox').val(item)
+          $('#deletefromshopping').hide();
+          $('#buyModal button#addtobuy').click(function(){addtobuy('fridge')});
+          $('#buyModal').modal('show');
+        }
+        return true;
+      }
+    },
+    error: function(data) {
+      console.log(data);
+    }
+  });
+}
+
+/* When someone clicks on Edit */
+function click_edit_shopping() {
+  item = $(this);
+  what = item.parent().parent().text();
+  what = what.split('\n')[1].trim();
+  console.log(what);
+  $('#buyModal').attr('data-data', what);
+  $("input#textbox").val(what);
+  $('#deletefromshopping').show();
+
+  $('#buyModal').modal('show');
+}
+
+function addtobuy(then){
+  what = $("#buyModal input#textbox").val();
+  console.log('add '+ what);
+  data = {
+    "what": what,
+    "to": "shopping",
+    "then": then
+  }
+  action = '/add'
+  if ($('#deletefromshopping').is(":visible")) {
+    item = $("#buyModal").attr('data-data');
+
+    action = '/edit'
+    data = {
+      "what": what,
+      "to": "shopping",
+      "item": item,
+      "then":then
+    }
+  }
+
+  $.ajax({
+    type: "POST",
+    url: action,
+    data: data,
+    dataType: 'json',
+    success: function(data) {
+      console.log(data)
+      if (data[0] == false) {
+        $('#notfoundModal').modal('show');
+        return true;
+      } else {
+        html = data[1];
+        console.log(data)
+        $("div#itemlist").replaceWith(html)
+        if (then == 'fridge') {
+          $("span.bg-success").click(click_use);
+        } else if (then == 'shopping') {
+          $("span.bg-success").click(click_bought);
+          click_badge_fridge(what.split(';')[0], '/shopping', 'bought');
+        }
 
         return true;
       }

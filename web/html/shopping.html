@@ -52,24 +52,17 @@
       $("#addModalFridge input#textbox").val(what);
       $("#addModalFridge input#quantity").val("");
       $("#addModalFridge input#current_quantity").hide();
+      $("#addModalFridge #label_current_quantity").hide();
       $("#addModalFridge input#expirydate").val("");
-      $('#addModalFridge #unitg').click();
+      $('#addModalFridge #unitpc').click();
       $("#deletefromfridge").hide()
+
+      $("#addModalFridge input#textbox").parent().hide();
+      $("h5#itemtitle").text(what);
       $('#addModalFridge').modal('show');
     }
 
-    /* When someone clicks on Edit */
-    function click_edit_shopping() {
-      item = $(this);
-      what = item.parent().parent().text();
-      what = what.split('\n')[1].trim();
-      console.log(what);
-      $('#buyModal').attr('data-data', what);
-      $("input#textbox").val(what);
-      $('#deletefromshopping').show();
 
-      $('#buyModal').modal('show');
-    }
 
     function click_badge_shopping(item, url, action) {
       $.ajax({
@@ -127,52 +120,17 @@
       saveToFridge("shopping");
     });
 
+    $("input#unitpc").click(function(){
+        $('#quantity').val(100);
+        $('#quantity').prop('disabled', true);
+    });
+    $("input#unitunit").click(function(){
+        $('#quantity').val("");
+        $('#quantity').prop('disabled', false);
+    });
 
     /* Adding to the shopping list */
-    $('button#addtobuy').click(function() {
-      what = $("#buyModal input#textbox").val();
-      console.log(what);
-      data = {
-        "what": what,
-        "to": "shopping"
-      }
-      action = '/add'
-      if ($('#deletefromshopping').is(":visible")) {
-        item = $("#buyModal").attr('data-data');
-
-        action = '/edit'
-        data = {
-          "what": what,
-          "to": "shopping",
-          "item": item
-        }
-      }
-
-      $.ajax({
-        type: "POST",
-        url: action,
-        data: data,
-        dataType: 'json',
-        success: function(data) {
-          console.log(data)
-          if (data[0] == false) {
-            $('#notfoundModal').modal('show');
-            return true;
-          } else {
-            html = data[1];
-            console.log(data)
-            $("div#itemlist").replaceWith(html)
-            $("span.bg-danger").click(click_edit_shopping);
-            $("span.bg-success").click(click_bought);
-
-            return true;
-          }
-        },
-        error: function(data) {
-          console.log(data);
-        }
-      });
-    });
+    $('button#addtobuy').click(function(){addtobuy('shopping')});
   </script>
 </body>
 
