@@ -144,7 +144,15 @@ def get_list_html(j, action_label, fridge=False):
     return list_html
 
 
-class ListHandler():
+class ListHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+
+        print('\n*** %s is looking at a list.' % username)
+
+
+class ListManager():
     def remove_from_list(self, what, which_list, action):
         username = str(self.current_user[1:-1], 'utf-8')
         that_list = json.load(open(self.fp))[which_list]
@@ -168,7 +176,7 @@ class ListHandler():
         return res
 
 
-class ShoppingHandler(BaseHandler, ListHandler):
+class ShoppingHandler(BaseHandler, ListManager):
     @tornado.web.authenticated
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
@@ -205,7 +213,49 @@ class ShoppingHandler(BaseHandler, ListHandler):
         _initialize(self, **kwargs)
 
 
-class FridgeHandler(BaseHandler, ListHandler):
+class PharmacyHandler(BaseHandler, ListManager):
+    @tornado.web.authenticated
+    def get(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+
+        print('\n*** %s is looking into the fridge.' % username)
+        shopping = json.load(open(self.fp))['pharmacy']
+        if len(shopping) == 0:
+            sl = 'Pharmacie vide !<br>'
+        else:
+            sl = get_list_html(shopping, action_label='Utiliser', fridge=True)
+
+
+
+        from glob import glob
+        files = glob(op.join(op.dirname(op.dirname(__file__)),
+                              'web/html/modals/*.html'))
+        modals = '\n'.join([open(e).read() for e in files])
+        self.render("html/pharmacy.html", list=sl, modals=modals)
+
+    def post(self):
+        username = str(self.current_user[1:-1], 'utf-8')
+        action = str(self.get_argument("action", ""))
+        print(str(self.get_argument("what", "\n")))
+        what = str(self.get_argument("what", "\n")).split('\n')[0]
+
+        print((username, action, what))
+
+        that_list = self.remove_from_list(what, 'fridge', action)
+        is_found = that_list is not None
+        sl = None
+        if is_found:
+            sl = 'Pharmacie vide !'
+            if len(that_list) != 0:
+                sl = get_list_html(that_list, action_label='Utiliser', fridge=True)
+
+        self.write(json.dumps([is_found, sl]))
+
+    def initialize(self, **kwargs):
+        _initialize(self, **kwargs)
+
+
+class FridgeHandler(BaseHandler, ListManager):
     @tornado.web.authenticated
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
@@ -243,7 +293,7 @@ class FridgeHandler(BaseHandler, ListHandler):
         _initialize(self, **kwargs)
 
 
-class TodoHandler(BaseHandler, ListHandler):
+class TodoHandler(BaseHandler, ListManager):
     @tornado.web.authenticated
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
@@ -295,15 +345,18 @@ class AddHandler(BaseHandler):
         then = str(self.get_argument("then", to))
 
         print((username, to, what.split('\n')[0]))
-        if to in ['shopping', 'todo', 'fridge']:
-            actions_labels = {'shopping': 'Acheté', 'todo': 'Fait', 'fridge':'Utiliser'}
+        if to in ['shopping', 'todo', 'fridge', 'pharmacy']:
+            actions_labels = {'shopping': 'Acheté',
+                              'todo': 'Fait',
+                              'fridge':'Utiliser',
+                              'pharmacy': 'Utiliser'}
 
             shopping = self.add_to_list(what, to)
             if then != to:
                 j = json.load(open(self.fp))
                 shopping = j[then]
             sl = get_list_html(shopping, action_label=actions_labels[to],
-                               fridge=then=='fridge')
+                               fridge=then in ('fridge', 'pharmacy'))
 
             self.write(json.dumps([True, sl]))
         else: # log
@@ -346,14 +399,17 @@ class EditHandler(BaseHandler):
         print(then, to)
 
         print((username, to, what.split('\n')[0]))
-        if to in ['shopping', 'todo', 'fridge']:
-            actions_labels = {'shopping': 'Acheté', 'todo': 'Fait', 'fridge':'Utiliser'}
+        if to in ['shopping', 'todo', 'fridge', 'pharmacy']:
+            actions_labels = {'shopping': 'Acheté',
+                              'todo': 'Fait',
+                              'fridge':'Utiliser',
+                              'pharmacy':'Utiliser'}
             shopping = self.add_to_list(what, to, item)
             if then != to:
                 j = json.load(open(self.fp))
                 shopping = j[then]
             sl = get_list_html(shopping, action_label=actions_labels[to],
-                               fridge=to=='fridge')
+                               fridge=to in ('fridge', 'pharmacy'))
 
             self.write(json.dumps([True, sl]))
         else: # log

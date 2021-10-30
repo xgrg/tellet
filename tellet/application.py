@@ -24,7 +24,8 @@ class Application(tornado.web.Application):
             d = {'shopping': [],
                  'todo': [],
                  'log': [],
-                 'fridge': []}
+                 'fridge': [],
+                 'pharmacy': []}
             log.warning('File not found. Created %s' % fp)
             json.dump(d, open(fp, 'w'))
         else:
@@ -33,16 +34,18 @@ class Application(tornado.web.Application):
         handlers = [(r"/", h.MainHandler, params),
                     (r"/shopping", h.ShoppingHandler, params),
                     (r"/add", h.AddHandler, params),
+                    (r"/list", h.ListHandler, params),
                     (r"/edit", h.EditHandler, params),
                     (r"/stats", h.StatsHandler, params),
                     (r"/todo", h.TodoHandler, params),
                     (r"/reports", h.ReportsHandler, params),
                     (r"/fridge", h.FridgeHandler, params),
+                    (r"/pharmacy", h.PharmacyHandler, params),
                     (r"/auth/login", h.AuthLoginHandler, params),
                     (r"/auth/logout", h.AuthLogoutHandler)]
 
         s = {
-            "autoreload": False,
+            "autoreload": True,
             "template_path": TEMPLATE_PATH,
             "static_path": STATIC_PATH,
             "debug": DEBUG,

@@ -18,7 +18,7 @@
   </div>
 
   <!-- Modal window: Adding item to fridge list  -->
-  <div id="addModalFridge" class="modal fade" role="dialog">
+  <div id="fridgeAddModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -61,16 +61,16 @@
         </div>
 
         <div class="modal-footer">
-          <button id="savetofridge" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
-          <button id="deletefromfridge" type="button" class="btn btn-danger" data-bs-dismiss="modal">Delete</button>
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
+          <button id="add" type="button" class="btn btn-success" data-bs-dismiss="modal">Ajouter</button>
+          <button id="delete" type="button" class="btn btn-danger" data-bs-dismiss="modal">Supprimer</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Fermer</button>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Modal window: Use item from fridge list  -->
-  <div id="useModal" class="modal fade" role="dialog">
+  <div id="fridgeUseModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
@@ -97,24 +97,8 @@
         </div>
 
         <div class="modal-footer">
-          <button id="useitem" type="button" class="btn btn-success" data-bs-dismiss="modal">Save</button>
-          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal window: Re-add item to shopping list  -->
-  <div id="reshopModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-body">
-          <label class="form-check-label" for="flexSwitchCheckDefault">Rajouter à la liste de courses ?</label>
-        </div>
-
-        <div class="modal-footer">
-          <button id="reshop" type="button" class="btn btn-success" data-bs-dismiss="modal">Oui</button>
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Non</button>
+          <button id="use" type="button" class="btn btn-success" data-bs-dismiss="modal">Utiliser</button>
+          <button type="button" class="btn btn-default" data-bs-dismiss="modal">Fermer</button>
         </div>
       </div>
     </div>
