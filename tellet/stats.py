@@ -37,8 +37,8 @@ def get_radar(df, label='My dataset'):
         if not has_found:
             sorted_actions[row.who].setdefault('autres', [])
             sorted_actions[row.who]['autres'].append(row.what)
-    print(sorted_actions['Cha']['autres'])
-    print(sorted_actions['Greg']['autres'])
+    # print(sorted_actions['Cha']['autres'])
+    # print(sorted_actions['Greg']['autres'])
 
     datasets = []
     colors = [{'backgroundColor': 'rgba(54, 162, 235, 0.2)',
@@ -56,7 +56,7 @@ def get_radar(df, label='My dataset'):
 
     for who, c in zip(labels, colors):
         d = {'label': who,
-             'data': [len(sorted_actions[who][a]) for a in actions],
+             'data': [len(sorted_actions.get(who, {}).get(a, [])) for a in actions],
              'fill': True}
         d.update(c)
         datasets.append(d)
@@ -83,8 +83,8 @@ def get_stacked_doughnut(df):
         sorted_actions[row.who].setdefault(duration, [])
         sorted_actions[row.who][duration].append(what)
 
-    d1 = [len(sorted_actions['Cha'].get(e, [])) for e in '012345']
-    d2 = [len(sorted_actions['Greg'].get(e, [])) for e in '012345']
+    d1 = [len(sorted_actions.get('Cha', {}).get(e, [])) for e in '012345']
+    d2 = [len(sorted_actions.get('Greg', {}).get(e, [])) for e in '012345']
 
     data = {'labels': ['<1 min', '1-7 min', '10-15 min', '20-30 min',
                        '>30 min', '>2 h'],

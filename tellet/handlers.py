@@ -412,22 +412,28 @@ class StatsHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
-        print('\n*** %s is stating.' % username)
+        print('\n*** %s is looking at stats.' % username)
 
         loglist = json.load(open(self.fp))['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
-        df = pd.DataFrame(loglist, columns=columns).set_index('ts')
+        data = pd.DataFrame(loglist, columns=columns).set_index('ts')
+        df = data.query('where != "reports"')
         df = df.sort_index(ascending=False)
 
-        html = '''
+        tpl = '''
         <style>
             table.df { display: block;
             overflow-x: auto;
             white-space: nowrap;}
             .df tbody tr:nth-child(even) { background-color: lightblue; }
         </style>
-        ''' + df.to_html(classes="df")
-        self.render("html/stats.html", list=html)
+        '''
+        log = tpl + df.to_html(classes="df")
+
+        df = data.query('where == "reports"')
+        df = df.sort_index(ascending=False)
+        reports = tpl + df.to_html(classes="df")
+        self.render("html/stats.html", reports=reports, log=log)
 
     def post(self):
         loglist = json.load(open(self.fp))['log']

@@ -280,15 +280,12 @@ function use_fridge(dest) {
     },
     dataType: 'json',
     success: function(data) {
-      if (data[0] == false) {
+      if (data == false) {
         $('#errormsg').html('Erreur');
         $('#notfoundModal').modal('show');
         return true;
       } else {
-        html = data[1];
-        $("div#itemlist").replaceWith(html)
-        $("span.bg-danger").click(click_edit_fridge);
-        $("span.bg-success").click(click_use);
+        update_list('fridge')        
         reshop = $('#fridgeUseModal input#flexSwitchCheckDefault').is(':checked');
         if (reshop == true) {
           console.log('reshop')
