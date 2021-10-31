@@ -45,29 +45,7 @@
   <script>
     $(document).ready(function() {
 
-      $("#fridge #openAddModal").click(function() {
-        $("input#textbox").val("");
-        $("input#quantity").val("");
-        $("input#expirydate").val("");
-        $('#unitg').click();
-        options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
-        html = '';
-        options.forEach(function(v) {
-          html += '<option value="' + v + '">';
-        });
-        $('datalist#whattoaddfridge').html(html)
-        $('#fridgeAddModal #delete').hide();
-        $('#quantity').show();
-        $('#label_quantity').show();
-        $('#current_quantity').hide();
-        $('#unitpc').click();
-
-        $('#label_current_quantity').hide();
-        $('#fridgeAddModal #add').prop('disabled', true);
-
-        $('#fridgeAddModal #add').text('Ajouter')
-        $('#fridgeAddModal').modal('show');
-      });
+      $("#fridge #openAddModal").click(openFridgeModal);
 
       $('#fridgeAddModal #add').click(function() {add_to_fridge("fridge")});
       $('#fridgeAddModal #delete').click(function(){

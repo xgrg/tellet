@@ -44,23 +44,7 @@
   {{modals}}
 
   <script>
-    $("#openAddModal").click(function() {
-      $('#shoppingAddModal input#textbox').val('')
-
-      options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
-      html = '';
-      options.forEach(function(v) {
-        html += '<option value="' + v + '">';
-      });
-      $('#shoppingAddModal datalist#whattobuy').html(html)
-      $('#shoppingAddModal #delete').hide();
-      $('#shoppingAddModal #add').text('Ajouter')
-      $('#shoppingAddModal #add').prop('disabled', true)
-      $('#shoppingAddModal input#textbox').on('input', function(e){
-        $('#shoppingAddModal #add').prop('disabled', is_modal_invalid(e.target))
-      })
-      $('#shoppingAddModal').modal('show');
-    });
+    $("#openAddModal").click(openShoppingModal);
 
 
     $("span.bg-danger").click(click_edit_shopping)

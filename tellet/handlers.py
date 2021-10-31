@@ -233,10 +233,16 @@ class ListHandler():
                         ed = style % ed
                     except ValueError:
                         ed = ' <span style="color:red; font-weight:600">(%s)</span>' % ed
+                if unit == 'units':
+                    unit = ''
+                    original_q = '/'+original_q
+                else:
+                    unit = '%'
+                    original_q = ''
 
                 sl.append('''<li class="list-group-item d-flex justify-content-between
                       align-items-center" data-data="%s">
-                        %s &#8211; %s/%s %s%s
+                        %s &#8211; %s%s%s%s
                         <span>
                         <span class="badge bg-danger">Editer</span>
                         <span class="badge bg-success">%s </span></span>
