@@ -81,6 +81,7 @@
         $('#fridgeAddModal #add').prop('disabled', is_modal_invalid(e.target))
       })
 
+      $('#fridgeAddModal input#expirydate').on('input', update_quantity)
       $('#fridgeUseModal input#quantity').on('input', update_quantity)
 
       $('#fridgeAddModal input#quantity').on('input', function(e){
