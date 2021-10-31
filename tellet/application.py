@@ -34,7 +34,6 @@ class Application(tornado.web.Application):
         handlers = [(r"/", h.MainHandler, params),
                     (r"/shopping", h.ShoppingHandler, params),
                     (r"/add", h.AddHandler, params),
-                    (r"/list", h.ListHandler, params),
                     (r"/edit", h.EditHandler, params),
                     (r"/stats", h.StatsHandler, params),
                     (r"/todo", h.TodoHandler, params),

@@ -17,26 +17,25 @@ function validate_ed(n) {
 
 
 function is_modal_invalid(e) {
-    parent = $(e).closest('.modal').attr('id');
-    console.log(parent)
-    val = $('#' + parent + ' #textbox').val();
-    test = val == "" | val.indexOf(';') > -1;
-    if (parent == "fridgeAddModal"){
-      val = $('#' + parent + ' #quantity').val();
-      if ($('#current_quantity').is(':visible')){
-        val2 = $('#current_quantity').val()
-        test = test | val2 == "" | val2 > val;
-      }
-      unit_checked = $('#' + parent + ' #unitunit').is(':checked');
-      pc_checked = $('#' + parent + ' #unitpc').is(':checked');
-      if (unit_checked){
-        test = test | (val == "" | val < 0);
-      }
-      else if (pc_checked & $('#current_quantity').is(':visible')){
-        test = test | (val2 == "" | val2 < 0 | val2 > 100);
-      }
+  parent = $(e).closest('.modal').attr('id');
+  console.log(parent)
+  val = $('#' + parent + ' #textbox').val();
+  test = val == "" | val.indexOf(';') > -1;
+  if (parent == "fridgeAddModal") {
+    val = $('#' + parent + ' #quantity').val();
+    if ($('#current_quantity').is(':visible')) {
+      val2 = $('#current_quantity').val()
+      test = test | val2 == "" | parseInt(val2) > parseInt(val);
     }
-    return test
+    unit_checked = $('#' + parent + ' #unitunit').is(':checked');
+    pc_checked = $('#' + parent + ' #unitpc').is(':checked');
+    if (unit_checked) {
+      test = test | (val == "" | val < 0);
+    } else if (pc_checked & $('#current_quantity').is(':visible')) {
+      test = test | (val2 == "" | val2 < 0 | val2 > 100);
+    }
+  }
+  return test
 }
 
 
@@ -134,11 +133,10 @@ function add_to_fridge(then) {
   ed = $("input#expirydate").val(); // skipping date validation
 
   unittype = $('#unittype input:radio:checked').attr('data-value');
-  if (q < 0 | q1 < 0 | q == '' | q1 == ''){
+  if (q < 0 | q1 < 0 | q == '' | q1 == '') {
     $('p#errormsg').html('La quantité doit être positive.')
     $('#notfoundModal').modal('show');
-  }
-  else if (unittype == 'pc' & q1 > 100){
+  } else if (unittype == 'pc' & q1 > 100) {
     $('p#errormsg').html('Un pourcentage doit être inférieure à 100.')
     $('#notfoundModal').modal('show');
   } else {
@@ -147,8 +145,7 @@ function add_to_fridge(then) {
     action = '/add'
     data = {
       "what": what,
-      "to": dest,
-      "then": then
+      "to": dest
     }
 
     // If delete is visible, it means we're editing; otherwise we're adding
@@ -159,11 +156,9 @@ function add_to_fridge(then) {
       data = {
         "what": what,
         "to": dest,
-        "item": item,
-        "then": then
+        "item": item
       }
     }
-
 
     if (item != undefined)
       console.log('* Replacing ' + item + ' in ' + dest + ' with ' + what + ' from ' + then);
@@ -178,30 +173,43 @@ function add_to_fridge(then) {
       dataType: 'json',
       success: function(data) {
         console.log(data)
-        if (data[0] == false) {
+        if (data == false)
           $('#notfoundModal').modal('show');
-          return true;
-        } else {
-          html = data[1];
-          console.log(data)
-          $("div#itemlist").html(html)
-          if (then == 'fridge' | then == 'pharmacy') {
-            $("#fridge").on('click', "span.bg-success", click_use);
-            $("#fridge").on('click', "span.bg-danger", click_edit_fridge);
-          } else if (then == 'shopping') {
-            $("#shopping").on('click', "span.bg-success", click_bought);
-            $("#shopping").on('click', "span.bg-danger", click_edit_shopping);
+        else {
+          update_list(then);
+          if (then == 'shopping')
             call_action('/shopping', what.split(';')[0], 'bought');
-          }
-
-          return true;
         }
+        return true;
       },
       error: function(data) {
         console.log(data);
       }
     });
   }
+}
+
+
+function update_list(id) {
+  $.ajax({
+    type: "POST",
+    url: id,
+    data: {
+      'action': 'show'
+    },
+    dataType: 'html',
+    success: function(data) {
+      console.log(data)
+      $("div#itemlist").html(data)
+      if (id == 'fridge' | id == 'pharmacy') {
+        $("#fridge").on('click', "span.bg-success", click_use);
+        $("#fridge").on('click', "span.bg-danger", click_edit_fridge);
+      } else if (id == 'shopping') {
+        $("#shopping").on('click', "span.bg-success", click_bought);
+        $("#shopping").on('click', "span.bg-danger", click_edit_shopping);
+      }
+    }
+  })
 }
 
 
@@ -224,11 +232,10 @@ function call_action(url, what, action, then) {
         html = data[1];
         console.log(data)
         $("div#itemlist").html(html)
-        if (then == "shopping"){
+        if (then == "shopping") {
           $("#shopping").on('click', "span.bg-success", click_bought);
           $("#shopping").on('click', "span.bg-danger", click_edit_shopping);
-        }
-        else if (then == "fridge"){
+        } else if (then == "fridge" | then == 'pharmacy') {
           $("#fridge").on('click', "span.bg-success", click_use);
           $("#fridge").on('click', "span.bg-danger", click_edit_fridge);
         }
@@ -276,13 +283,15 @@ function use_fridge(dest) {
         $("span.bg-danger").click(click_edit_fridge);
         $("span.bg-success").click(click_use);
         reshop = $('#fridgeUseModal input#flexSwitchCheckDefault').is(':checked');
-        if (reshop == true){
+        if (reshop == true) {
           console.log('reshop')
           item = what.split(';')[0];
           console.log(what + ';' + item);
           $('#shoppingAddModal input#textbox').val(item)
           $('#shoppingAddModal button#delete').hide();
-          $('#shoppingAddModal #add').click( function() { add_to_shopping_list(dest) });
+          $('#shoppingAddModal #add').click(function() {
+            add_to_shopping_list(dest)
+          });
           $('#shoppingAddModal').modal('show');
         }
         return true;
@@ -327,15 +336,14 @@ function click_edit_shopping() {
 }
 
 
-function add_to_shopping_list(then){
+function add_to_shopping_list(then) {
 
   // Collecting details from shoppingAddModal
   what = $("#shoppingAddModal input#textbox").val();
-  console.log('add '+ what);
+  console.log('add ' + what);
   data = {
     "what": what,
-    "to": "shopping",
-    "then": then
+    "to": "shopping"
   }
   action = '/add'
 
@@ -347,8 +355,7 @@ function add_to_shopping_list(then){
     data = {
       "what": what,
       "to": "shopping",
-      "item": item,
-      "then":then
+      "item": item
     }
   }
 
@@ -359,27 +366,11 @@ function add_to_shopping_list(then){
     dataType: 'json',
     success: function(data) {
       console.log(data)
-      if (data[0] == false) {
+      if (data == false)
         $('#notfoundModal').modal('show');
-        return true;
-      } else {
-        html = data[1];
-        console.log(data)
-        $("div#itemlist").replaceWith(html)
-        if (then == 'fridge') {
-          $("span.bg-success").click(click_use);
-          $("span.bg-danger").click(click_edit_fridge);
-
-        } else if (then == 'shopping') {
-          console.log("hersqe");
-          console.log("zif" + $("span.bg-danger"));
-          $("span.bg-danger").click(function(){console.log("here")});
-
-          $("span.bg-success").click(click_bought);
-        }
-
-        return true;
-      }
+      else
+        update_list(then);
+      return true;
     },
     error: function(data) {
       console.log(data);

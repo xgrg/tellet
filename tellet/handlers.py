@@ -5,6 +5,11 @@ import pandas as pd
 from datetime import datetime
 import os.path as op
 
+actions_labels = {'shopping': 'Acheté',
+                  'todo': 'Fait',
+                  'fridge': 'Utiliser',
+                  'pharmacy': 'Utiliser'}
+
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -113,46 +118,7 @@ class MainHandler(BaseHandler):
         _initialize(self, **kwargs)
 
 
-def get_list_html(j, action_label, fridge=False):
-    if fridge:
-        sl = []
-        for each in j:
-            label, q, original_q, unit, ed = each.split(';')
-            if ed != '':
-                try:
-                    ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
-                    ed = ' &#8211 expire le %s' % ed
-                except ValueError:
-                    ed = ' &#8211 <span style="color:red">%s</span>' % ed
-
-            sl.append('''<li class="list-group-item d-flex justify-content-between
-                  align-items-center" data-data="%s">
-                    %s &#8211; %s/%s %s%s
-                    <span>
-                    <span class="badge bg-danger">Editer</span>
-                    <span class="badge bg-success">%s </span></span>
-                  </li>''' % (each, label, q, original_q, unit, ed, action_label))
-    else:
-        sl = ['''<li class="list-group-item d-flex justify-content-between
-              align-items-center">
-                %s
-                <span>
-                <span class="badge bg-danger">Editer</span>
-                <span class="badge bg-success">%s </span></span>
-              </li>''' % (each, action_label) for each in j]
-    list_html = '<div id="itemlist"><ul class="list-group">%s</ul></div>' % ''.join(sl)
-    return list_html
-
-
-class ListHandler(BaseHandler):
-    @tornado.web.authenticated
-    def get(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-
-        print('\n*** %s is looking at a list.' % username)
-
-
-class ListManager():
+class ListHandler():
     def remove_from_list(self, what, which_list, action):
         username = str(self.current_user[1:-1], 'utf-8')
         that_list = json.load(open(self.fp))[which_list]
@@ -175,147 +141,137 @@ class ListManager():
         json.dump(j, open(self.fp, 'w'), indent=4)
         return res
 
-
-class ShoppingHandler(BaseHandler, ListManager):
-    @tornado.web.authenticated
-    def get(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-
-        print('\n*** %s is shopping.' % username)
-        shopping = json.load(open(self.fp))['shopping']
-        sl = get_list_html(shopping, action_label='Acheté')
-        from glob import glob
-        files = glob(op.join(op.dirname(op.dirname(__file__)),
-                              'web/html/modals/*.html'))
-        modals = '\n'.join([open(e).read() for e in files])
-
-        self.render("html/shopping.html", list=sl, modals=modals)
-
-    def post(self):
+    def perform_action(self):
         username = str(self.current_user[1:-1], 'utf-8')
         action = str(self.get_argument("action", ""))
+        print(str(self.get_argument("what", "\n")))
         what = str(self.get_argument("what", "\n")).split('\n')[0]
+
+        if action == 'show':
+            html = self.get_list_html()
+            self.write(html)
+            return
 
         print((username, action, what))
 
-        that_list = self.remove_from_list(what, 'shopping', action)
-
+        that_list = self.remove_from_list(what, self._id, action)
         is_found = that_list is not None
         sl = None
         if is_found:
-            sl = 'La liste est vide. Rien à acheter !'
+            sl = 'La liste est vide.'
             if len(that_list) != 0:
-                sl = get_list_html(that_list, action_label='Acheté')
+                sl = self.get_list_html()
 
         self.write(json.dumps([is_found, sl]))
 
-    def initialize(self, **kwargs):
-        _initialize(self, **kwargs)
-
-
-class PharmacyHandler(BaseHandler, ListManager):
-    @tornado.web.authenticated
-    def get(self):
+    def _get_(self):
         username = str(self.current_user[1:-1], 'utf-8')
 
-        print('\n*** %s is looking into the fridge.' % username)
-        shopping = json.load(open(self.fp))['pharmacy']
+        print('\n*** %s is looking at %s.' % (username, self._id))
+        shopping = json.load(open(self.fp))[self._id]
         if len(shopping) == 0:
-            sl = 'Pharmacie vide !<br>'
+            sl = '<div id="itemlist">Liste vide !</div>'
         else:
-            sl = get_list_html(shopping, action_label='Utiliser', fridge=True)
-
-
+            sl = self.get_list_html() #shopping, action_label='Utiliser', fridge=True)
 
         from glob import glob
         files = glob(op.join(op.dirname(op.dirname(__file__)),
                               'web/html/modals/*.html'))
         modals = '\n'.join([open(e).read() for e in files])
-        self.render("html/pharmacy.html", list=sl, modals=modals)
+        self.render("html/%s.html" % self._id, list=sl, modals=modals)
+
+    def get_list_html(self): #, fridge=False):
+        j = json.load(open(self.fp))[self._id]
+        if len(j) == 0:
+            list_html = '<div id="itemlist">Liste vide !</div>'
+            return list_html
+        if self._id in ('fridge', 'pharmacy'):
+            sl = []
+            for each in j:
+
+                label, q, original_q, unit, ed = each.split(';')
+                if ed != '':
+                    try:
+                        ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
+                        ed = ' &#8211 expire le %s' % ed
+                    except ValueError:
+                        ed = ' &#8211 <span style="color:red">%s</span>' % ed
+
+                sl.append('''<li class="list-group-item d-flex justify-content-between
+                      align-items-center" data-data="%s">
+                        %s &#8211; %s/%s %s%s
+                        <span>
+                        <span class="badge bg-danger">Editer</span>
+                        <span class="badge bg-success">%s </span></span>
+                      </li>''' % (each, label, q, original_q, unit, ed,
+                                  self._action_label))
+        else:
+            sl = ['''<li class="list-group-item d-flex justify-content-between
+                  align-items-center">
+                    %s
+                    <span>
+                    <span class="badge bg-danger">Editer</span>
+                    <span class="badge bg-success">%s </span></span>
+                  </li>''' % (each, self._action_label) for each in j]
+        list_html = '<div id="itemlist"><ul class="list-group">%s</ul></div>' % ''.join(sl)
+        return list_html
+
+
+class ShoppingHandler(BaseHandler, ListHandler):
+    _id = 'shopping'
+    _action_label = 'Acheté'
+
+    @tornado.web.authenticated
+    def get(self):
+        self._get_()
 
     def post(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        action = str(self.get_argument("action", ""))
-        print(str(self.get_argument("what", "\n")))
-        what = str(self.get_argument("what", "\n")).split('\n')[0]
-
-        print((username, action, what))
-
-        that_list = self.remove_from_list(what, 'fridge', action)
-        is_found = that_list is not None
-        sl = None
-        if is_found:
-            sl = 'Pharmacie vide !'
-            if len(that_list) != 0:
-                sl = get_list_html(that_list, action_label='Utiliser', fridge=True)
-
-        self.write(json.dumps([is_found, sl]))
+        self.perform_action()
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
 
 
-class FridgeHandler(BaseHandler, ListManager):
+class PharmacyHandler(BaseHandler, ListHandler):
+    _id = 'pharmacy'
+    _action_label = 'Utiliser'
+
     @tornado.web.authenticated
     def get(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-
-        print('\n*** %s is looking into the fridge.' % username)
-        shopping = json.load(open(self.fp))['fridge']
-        sl = get_list_html(shopping, action_label='Utiliser', fridge=True)
-        # modals = open(op.join(op.dirname(op.dirname(__file__)),
-        #                       'web/html/modals/fridge.html')).read()
-        from glob import glob
-        files = glob(op.join(op.dirname(op.dirname(__file__)),
-                              'web/html/modals/*.html'))
-        modals = '\n'.join([open(e).read() for e in files])
-        self.render("html/fridge.html", list=sl, modals=modals)
+        self._get_()
 
     def post(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        action = str(self.get_argument("action", ""))
-        print(str(self.get_argument("what", "\n")))
-        what = str(self.get_argument("what", "\n")).split('\n')[0]
-
-        print((username, action, what))
-
-        that_list = self.remove_from_list(what, 'fridge', action)
-        is_found = that_list is not None
-        sl = None
-        if is_found:
-            sl = 'La liste est vide. Rien au frigo !'
-            if len(that_list) != 0:
-                sl = get_list_html(that_list, action_label='Utiliser', fridge=True)
-
-        self.write(json.dumps([is_found, sl]))
+        self.perform_action()
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
 
 
-class TodoHandler(BaseHandler, ListManager):
+class FridgeHandler(BaseHandler, ListHandler):
+    _id = 'fridge'
+    _action_label = 'Utiliser'
+
     @tornado.web.authenticated
     def get(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        print('\n*** %s is todoing.' % username)
-        todo = json.load(open(self.fp))['todo']
-        tl = get_list_html(todo, action_label='Effectué')
-        self.render("html/todo.html", list=tl)
+        self._get_()
 
     def post(self):
-        username = str(self.current_user[1:-1], 'utf-8')
-        action = str(self.get_argument("action", ""))
-        what = str(self.get_argument("what", "")).split('\n')[0]
+        self.perform_action()
 
-        print((username, action, what))
-        that_list = self.remove_from_list(what, 'todo', action)
-        is_found = that_list is not None
-        sl = None
-        if is_found:
-            sl = 'La liste est vide. Rien à faire !'
-            if len(that_list) != 0:
-                sl = get_list_html(that_list, action_label='Effectué')
-        self.write(json.dumps([is_found, sl]))
+    def initialize(self, **kwargs):
+        _initialize(self, **kwargs)
+
+
+class TodoHandler(BaseHandler, ListHandler):
+    _id = 'todo'
+    _action_label = 'Fait'
+
+    @tornado.web.authenticated
+    def get(self):
+        self._get_()
+
+    def post(self):
+        self.perform_action()
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -342,23 +298,18 @@ class AddHandler(BaseHandler):
         username = str(self.current_user[1:-1], 'utf-8')
         to = str(self.get_argument("to", ""))
         what = str(self.get_argument("what", ""))
-        then = str(self.get_argument("then", to))
+        # then = str(self.get_argument("then", to))
 
-        print((username, to, what.split('\n')[0]))
-        if to in ['shopping', 'todo', 'fridge', 'pharmacy']:
-            actions_labels = {'shopping': 'Acheté',
-                              'todo': 'Fait',
-                              'fridge':'Utiliser',
-                              'pharmacy': 'Utiliser'}
-
+        print((username, 'adding', what.split('\n')[0], 'to', to))
+        if to in actions_labels.keys():
             shopping = self.add_to_list(what, to)
-            if then != to:
-                j = json.load(open(self.fp))
-                shopping = j[then]
-            sl = get_list_html(shopping, action_label=actions_labels[to],
-                               fridge=then in ('fridge', 'pharmacy'))
-
-            self.write(json.dumps([True, sl]))
+            print(shopping)
+            # if then != to:
+            #     j = json.load(open(self.fp))
+            #     shopping = j[then]
+            # sl = self.get_list_html(shopping, action_label=actions_labels[to],
+            #                    fridge=then in ('fridge', 'pharmacy'))
+            self.write(json.dumps(True))
         else: # log
             j = json.load(open(self.fp))
 
@@ -395,23 +346,19 @@ class EditHandler(BaseHandler):
         to = str(self.get_argument("to", ""))
         what = str(self.get_argument("what", ""))
         item = str(self.get_argument("item", ""))
-        then = str(self.get_argument("then", to))
-        print(then, to)
+        # then = str(self.get_argument("then", to))
+        print('to', to)
 
         print((username, to, what.split('\n')[0]))
-        if to in ['shopping', 'todo', 'fridge', 'pharmacy']:
-            actions_labels = {'shopping': 'Acheté',
-                              'todo': 'Fait',
-                              'fridge':'Utiliser',
-                              'pharmacy':'Utiliser'}
+        if to in actions_labels.keys():
             shopping = self.add_to_list(what, to, item)
-            if then != to:
-                j = json.load(open(self.fp))
-                shopping = j[then]
-            sl = get_list_html(shopping, action_label=actions_labels[to],
-                               fridge=to in ('fridge', 'pharmacy'))
+            # if then != to:
+            #     j = json.load(open(self.fp))
+            #     shopping = j[then]
+            # sl = get_list_html(shopping, action_label=actions_labels[to],
+            #                    fridge=to in ('fridge', 'pharmacy'))
 
-            self.write(json.dumps([True, sl]))
+            self.write(json.dumps(True))
         else: # log
             j = json.load(open(self.fp))
 
@@ -422,117 +369,6 @@ class EditHandler(BaseHandler):
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
-
-
-def get_doughnut(df, label='My dataset'):
-    labels = ['Greg', 'Cha']
-    data = []
-    for i in labels:
-        data.append(len(df.query('who == "%s" & action == "did"' % i)))
-
-    graph = {'labels': labels,
-             'datasets': [{'label': label,
-                           'data': data,
-                           'backgroundColor': ['rgb(54, 162, 235)',
-                                               'rgb(255, 99, 132)'],
-                           'hoverOffset': 4}]}
-
-    config = {'type': 'doughnut',
-              'data': graph}
-    return config
-
-
-def get_radar(df, label='My dataset'):
-    labels = ['Greg', 'Cha']
-
-    actions = ['aspirateur', 'lavevaisselle', 'linge', 'lessive',
-               'litière', 'nettoyer', 'pavé', 'douche', 'wc', 'piscine',
-               'poubelles', 'cuisine', 'autres']
-    sorted_actions = {}
-    for i, row in df.iterrows():
-        if row.action != 'did' or str(row['where']) != 'reports': continue
-        sorted_actions.setdefault(row.who, {})
-        what = row.what
-        has_found = False
-        for a in actions[:-1]:
-            sorted_actions[row.who].setdefault(a, [])
-            if what.startswith(a):
-                sorted_actions[row.who][a].append(what)
-                has_found = True
-        if not has_found:
-            sorted_actions[row.who].setdefault('autres', [])
-            sorted_actions[row.who]['autres'].append(row.what)
-    print(sorted_actions['Cha']['autres'])
-    print(sorted_actions['Greg']['autres'])
-
-    datasets = []
-    colors = [{'backgroundColor': 'rgba(54, 162, 235, 0.2)',
-               'borderColor': 'rgb(54, 162, 235)',
-               'pointBackgroundColor': 'rgb(54, 162, 235)',
-               'pointBorderColor': '#fff',
-               'pointHoverBackgroundColor': '#fff',
-               'pointHoverBorderColor': 'rgb(54, 162, 235)'},
-              {'backgroundColor': 'rgba(255, 99, 132, 0.2)',
-               'borderColor': 'rgb(255, 99, 132)',
-               'pointBackgroundColor': 'rgb(255, 99, 132)',
-               'pointBorderColor': '#fff',
-               'pointHoverBackgroundColor': '#fff',
-               'pointHoverBorderColor': 'rgb(255, 99, 132)'}]
-
-    for who, c in zip(labels, colors):
-        d = {'label': who,
-             'data': [len(sorted_actions[who][a]) for a in actions],
-             'fill': True}
-        d.update(c)
-        datasets.append(d)
-
-    data = {'labels': actions,
-            'datasets': datasets}
-    options = {'elements': {'line': {'borderWidth': 3}},
-               'plugins': {'colorschemes': {'scheme': 'brewer.SetThree12'}}}
-
-    config = {'type': 'radar',
-              'data': data,
-              'options': options}
-    return config
-
-
-def get_stacked_doughnut(df):
-    sorted_actions = {}
-    for i, row in df.iterrows():
-        if row.action != 'did' or str(row['where']) != 'reports': continue
-        sorted_actions.setdefault(row.who, {})
-        items = row.what.split(';')
-        what = items[0]
-        duration = items[2]
-        sorted_actions[row.who].setdefault(duration, [])
-        sorted_actions[row.who][duration].append(what)
-
-    d1 = [len(sorted_actions['Cha'].get(e, [])) for e in '012345']
-    d2 = [len(sorted_actions['Greg'].get(e, [])) for e in '012345']
-
-    data = {'labels': ['<1 min', '1-7 min', '10-15 min', '20-30 min',
-                       '>30 min', '>2 h'],
-            'datasets': [{'label': 'Cha',
-                          'data': d1,
-                          'borderColor': 'rgb(255, 99, 132)',
-                          'backgroundColor': 'rgba(255, 99, 132, 0.2)'},
-                         {'label': 'Greg',
-                          'data': d2,
-                          'borderColor': 'rgb(54, 162, 235)',
-                          'backgroundColor': 'rgba(54, 162, 235, 0.2)'}]}
-
-    config = {'type': 'bar',
-              'data': data,
-              'options': {
-                'indexAxis': 'y',
-                'elements': {'bar': {'borderWidth': 2}},
-                'responsive': True,
-                'plugins': {
-                  'legend': {'position': 'right'}
-                 }
-              }}
-    return config
 
 
 class StatsHandler(BaseHandler):
@@ -562,9 +398,10 @@ class StatsHandler(BaseHandler):
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
 
         # n total
-        graph1 = get_doughnut(df, '# total de contributions')
-        graph2 = get_radar(df, 'Répartition des actions')
-        graph3 = get_stacked_doughnut(df)
+        from tellet import stats
+        graph1 = stats.get_doughnut(df, '# total de contributions')
+        graph2 = stats.get_radar(df, 'Répartition des actions')
+        graph3 = stats.get_stacked_doughnut(df)
         config = {'ntotal': graph1,
                   'radar': graph2,
                   'stacked': graph3}

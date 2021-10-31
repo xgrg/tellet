@@ -67,11 +67,12 @@
         $('#fridgeAddModal').modal('show');
       });
 
-      $('#fridgeAddModal #add').click(function() {add_to_fridge("pharmacy")});
+      $('#fridgeAddModal #add').click(function() { add_to_fridge("pharmacy")});
       $('#fridgeAddModal #delete').click(function(){
-        item = $(this).parent().parent().parent().parent();
-        console.log("Removing from pharma: " + item)
-        call_action('/pharmacy', item.attr('data-data'), 'removed');
+        item = $(this).closest('#fridgeAddModal').attr('data-data');
+        console.log("Removing from pharma: ")
+        console.log(item)
+        call_action('/pharmacy', item, 'removed');
       });
       $('#fridgeUseModal #use').click(function(){ use_fridge("pharmacy")});
 
