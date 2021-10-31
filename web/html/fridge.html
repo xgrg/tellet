@@ -71,9 +71,9 @@
 
       $('#fridgeAddModal #add').click(function() {add_to_fridge("fridge")});
       $('#fridgeAddModal #delete').click(function(){
-        item = $(this).parent().parent().parent().parent();
+        item = $(this).closest('#fridgeAddModal').attr('data-data');
         console.log("Removing from fridge: " + item)
-        call_action('/fridge', item.attr('data-data'), 'removed');
+        call_action('/fridge', item, 'removed');
       });
       $('#fridgeUseModal #use').click(function(){use_fridge("fridge")});
 

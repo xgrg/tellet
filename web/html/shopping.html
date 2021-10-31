@@ -68,12 +68,13 @@
 
 
     $('#shoppingAddModal #add').click(function() {
-      add_to_shopping_list('shopping')
+      add_to_shopping_list('shopping', 'shopping')
     });
     $('#shoppingAddModal #delete').click(function() {
-      item = $(this).parent().parent().parent().parent();
-      console.log('Removing from shopping: ' + item)
-      call_action('/shopping', item.attr('data-data'), 'removed');
+      item = $(this).closest('#shoppingAddModal').attr('data-data');
+      console.log('Removing from shopping: ')
+      console.log(item)
+      call_action('/shopping', item, 'removed');
     });
 
     $('#fridgeAddModal #add').click(function() {

@@ -202,11 +202,15 @@ function update_list(id) {
       console.log(data)
       $("div#itemlist").html(data)
       if (id == 'fridge' | id == 'pharmacy') {
-        $("#fridge").on('click', "span.bg-success", click_use);
-        $("#fridge").on('click', "span.bg-danger", click_edit_fridge);
+        $("#itemlist").on('click', "span.bg-success", click_use);
+        $("#itemlist").on('click', "span.bg-danger", click_edit_fridge);
       } else if (id == 'shopping') {
-        $("#shopping").on('click', "span.bg-success", click_bought);
-        $("#shopping").on('click', "span.bg-danger", click_edit_shopping);
+        $("#itemlist").on('click', "span.bg-success", click_bought);
+        $("#itemlist").on('click', "span.bg-danger", click_edit_shopping);
+      }
+      else if (id == 'todo') {
+        $("#itemlist").on('click', "span.bg-danger", click_edit_shopping);
+        $("#itemlist").on('click', "span.bg-success", click_done);
       }
     }
   })
@@ -233,11 +237,14 @@ function call_action(url, what, action, then) {
         console.log(data)
         $("div#itemlist").html(html)
         if (then == "shopping") {
-          $("#shopping").on('click', "span.bg-success", click_bought);
-          $("#shopping").on('click', "span.bg-danger", click_edit_shopping);
+          $("#itemlist").on('click', "span.bg-success", click_bought);
+          $("#itemlist").on('click', "span.bg-danger", click_edit_shopping);
         } else if (then == "fridge" | then == 'pharmacy') {
-          $("#fridge").on('click', "span.bg-success", click_use);
-          $("#fridge").on('click', "span.bg-danger", click_edit_fridge);
+          $("#itemlist").on('click', "span.bg-success", click_use);
+          $("#itemlist").on('click', "span.bg-danger", click_edit_fridge);
+        } else if (then == "todo") {
+          $("#itemlist").on('click', "span.bg-success", click_done);
+          $("#itemlist").on('click', "span.bg-danger", click_edit_shopping);
         }
         return true;
       }
@@ -290,7 +297,7 @@ function use_fridge(dest) {
           $('#shoppingAddModal input#textbox').val(item)
           $('#shoppingAddModal button#delete').hide();
           $('#shoppingAddModal #add').click(function() {
-            add_to_shopping_list(dest)
+            add_to_shopping_list('shopping', dest)
           });
           $('#shoppingAddModal').modal('show');
         }
@@ -336,14 +343,14 @@ function click_edit_shopping() {
 }
 
 
-function add_to_shopping_list(then) {
+function add_to_shopping_list(to, then) {
 
   // Collecting details from shoppingAddModal
   what = $("#shoppingAddModal input#textbox").val();
   console.log('add ' + what);
   data = {
     "what": what,
-    "to": "shopping"
+    "to": to
   }
   action = '/add'
 
@@ -354,7 +361,7 @@ function add_to_shopping_list(then) {
     action = '/edit'
     data = {
       "what": what,
-      "to": "shopping",
+      "to": to,
       "item": item
     }
   }
