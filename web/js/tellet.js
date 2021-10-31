@@ -136,6 +136,8 @@ function click_edit_fridge() {
   $("#fridgeAddModal h5#itemtitle").text('Editer');
   $('#current_quantity').show();
   $("#label_current_quantity").show();
+  $('#fridgeAddModal #add').prop('disabled', false);
+
   $('#fridgeAddModal #add').text('Sauvegarder')
   $('#fridgeAddModal').modal('show');
 }
@@ -389,6 +391,7 @@ function click_edit_shopping() {
   $("#shoppingAddModal h5#itemtitle").text('Editer');
   $("#shoppingAddModal input#textbox").show()
   $('#shoppingAddModal button#delete').show();
+  $('#shoppingAddModal #add').prop('disabled', false);
   $('#shoppingAddModal #add').text('Sauvegarder')
   $('#shoppingAddModal').modal('show');
 }
