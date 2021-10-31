@@ -172,7 +172,7 @@ class ListHandler():
         if len(shopping) == 0:
             sl = '<div id="itemlist">Liste vide !</div>'
         else:
-            sl = self.get_list_html() #shopping, action_label='Utiliser', fridge=True)
+            sl = self.get_list_html()
 
         from glob import glob
         files = glob(op.join(op.dirname(op.dirname(__file__)),
@@ -180,22 +180,59 @@ class ListHandler():
         modals = '\n'.join([open(e).read() for e in files])
         self.render("html/%s.html" % self._id, list=sl, modals=modals)
 
-    def get_list_html(self): #, fridge=False):
+    def get_list_html(self):
+        def sort_dates(j):
+            res1 = []  # with correct dates
+            res2 = []  # with wrong dates
+            res3 = []  # without dates
+            for each in j:
+                label, q, original_q, unit, ed = each.split(';')
+                if ed != '':
+                    try:
+                        ed = datetime.strptime(ed, '%d%m%y')
+                        res1.append((label, q, original_q, unit, ed))
+                    except ValueError:
+                        res2.append(each)
+                else:
+                    res3.append(each)
+            columns = ['label', 'q', 'q1', 'unit', 'ed']
+            df = pd.DataFrame(res1, columns=columns).sort_values(by='ed')
+            res1b = [e.to_list() for _, e in df.iterrows()]
+            res1 = []
+            for label, q, original_q, unit, ed in res1b:
+                ed = ed.strftime('%d%m%y')
+                e = [label, q, original_q, unit, ed]
+                res1.append(';'.join(e))
+
+            res = []
+            for each in (res1, res2, res3):
+                res.extend(each)
+            return res
+
         j = json.load(open(self.fp))[self._id]
         if len(j) == 0:
             list_html = '<div id="itemlist">Liste vide !</div>'
             return list_html
         if self._id in ('fridge', 'pharmacy'):
             sl = []
+            j = sort_dates(j)
             for each in j:
-
                 label, q, original_q, unit, ed = each.split(';')
                 if ed != '':
                     try:
-                        ed = datetime.strptime(ed, '%d%m%Y').strftime('%d-%m-%Y')
-                        ed = ' &#8211 expire le %s' % ed
+                        ed = datetime.strptime(ed, '%d%m%y')
+                        dt = ed - datetime.now()
+                        style = '&nbsp; (%s)'
+                        if dt.days < 0:
+                            style = '&nbsp; <span style="color:red; font-weight:600">(%s)</span>'
+                        elif dt.days < 2:
+                            style = '&nbsp; <span style="color:red">(%s)</span>'
+                        elif dt.days < 7:
+                            style = '&nbsp; <span style="color:darksalmon">(%s)</span>'
+                        ed = 'exp. %s' % ed.strftime('%d-%m-20%y')
+                        ed = style % ed
                     except ValueError:
-                        ed = ' &#8211 <span style="color:red">%s</span>' % ed
+                        ed = ' <span style="color:red; font-weight:600">(%s)</span>' % ed
 
                 sl.append('''<li class="list-group-item d-flex justify-content-between
                       align-items-center" data-data="%s">
