@@ -2,7 +2,7 @@ function is_modal_invalid(e) {
   parent = $(e).closest('.modal').attr('id');
   console.log(parent)
   val = $('#' + parent + ' #textbox').val();
-  test = val == "" | val.indexOf(';') > -1;
+  test = val == "" | val.indexOf(';') > -1 |  val.indexOf('\'') > -1 |  val.indexOf('|') > -1;
   if (parent == "fridgeAddModal") {
     val = $('#' + parent + ' #quantity').val();
     if ($('#current_quantity').is(':visible')) {
