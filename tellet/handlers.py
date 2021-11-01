@@ -5,11 +5,6 @@ import pandas as pd
 from datetime import datetime
 import os.path as op
 
-actions_labels = {'shopping': 'Acheté',
-                  'todo': 'Fait',
-                  'fridge': 'Utiliser',
-                  'pharmacy': 'Utiliser'}
-
 
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
@@ -344,17 +339,13 @@ class AddHandler(BaseHandler):
         # then = str(self.get_argument("then", to))
 
         print((username, 'adding', what.split('\n')[0], 'to', to))
-        if to in actions_labels.keys():
+        if to != 'log':
             shopping = self.add_to_list(what, to)
             print(shopping)
-            # if then != to:
-            #     j = json.load(open(self.fp))
-            #     shopping = j[then]
-            # sl = self.get_list_html(shopping, action_label=actions_labels[to],
-            #                    fridge=then in ('fridge', 'pharmacy'))
             self.write(json.dumps(True))
         else: # log
             j = json.load(open(self.fp))
+
 
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
             entry = (dt, username, 'did', what, to)
@@ -393,14 +384,8 @@ class EditHandler(BaseHandler):
         print('to', to)
 
         print((username, to, what.split('\n')[0]))
-        if to in actions_labels.keys():
+        if to != 'log':
             shopping = self.add_to_list(what, to, item)
-            # if then != to:
-            #     j = json.load(open(self.fp))
-            #     shopping = j[then]
-            # sl = get_list_html(shopping, action_label=actions_labels[to],
-            #                    fridge=to in ('fridge', 'pharmacy'))
-
             self.write(json.dumps(True))
         else: # log
             j = json.load(open(self.fp))
