@@ -1,21 +1,3 @@
-function validate_ed(n) {
-
-  if (n.length != 8)
-    return false;
-  dd = parseInt(n[0]) * 10 + parseInt(n[1]);
-  mm = parseInt(n[2]) * 10 + parseInt(n[3]);
-  yyyy = parseInt(n[4]) * 1000 + parseInt(n[5]) * 100 + parseInt(n[6]) * 10 + parseInt(n[7]);
-  console.log(String(dd) + ";" + String(mm) + ";" + String(yyyy));
-  date = new Date(String(yyyy) + ';' + String(mm) + ';' + String(dd));
-  console.log(date);
-  d = new Date();
-  if (isNaN(date) == true | date - d < 0)
-    return false;
-  else
-    return n;
-}
-
-
 function is_modal_invalid(e) {
   parent = $(e).closest('.modal').attr('id');
   console.log(parent)
@@ -75,37 +57,37 @@ function openShoppingModal() {
   $("#shoppingAddModal h5#itemtitle").text('Ajouter');
 
   $('#shoppingAddModal #add').prop('disabled', true)
-  $('#shoppingAddModal input#textbox').on('input', function(e){
+  $('#shoppingAddModal input#textbox').on('input', function(e) {
     $('#shoppingAddModal #add').prop('disabled', is_modal_invalid(e.target))
   })
   $('#shoppingAddModal').modal('show');
 }
 
 
-function openFridgeModal(){
-    $("input#textbox").val("");
-    $("input#quantity").val("");
-    $("input#expirydate").val("");
-    $('#unitg').click();
-    options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
-    html = '';
-    options.forEach(function(v) {
-      html += '<option value="' + v + '">';
-    });
-    $('datalist#whattoaddfridge').html(html)
-    $("#fridgeAddModal h5#itemtitle").text('Ajouter');
+function openFridgeModal() {
+  $("input#textbox").val("");
+  $("input#quantity").val("");
+  $("input#expirydate").val("");
+  $('#unitg').click();
+  options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
+  html = '';
+  options.forEach(function(v) {
+    html += '<option value="' + v + '">';
+  });
+  $('datalist#whattoaddfridge').html(html)
+  $("#fridgeAddModal h5#itemtitle").text('Ajouter');
 
-    $('#fridgeAddModal #delete').hide();
-    $('#quantity').show();
-    $('#label_quantity').show();
-    $('#current_quantity').hide();
-    $('#unitpc').click();
+  $('#fridgeAddModal #delete').hide();
+  $('#quantity').show();
+  $('#label_quantity').show();
+  $('#current_quantity').hide();
+  $('#unitpc').click();
 
-    $('#label_current_quantity').hide();
-    $('#fridgeAddModal #add').prop('disabled', true);
+  $('#label_current_quantity').hide();
+  $('#fridgeAddModal #add').prop('disabled', true);
 
-    $('#fridgeAddModal #add').text('Ajouter')
-    $('#fridgeAddModal').modal('show');
+  $('#fridgeAddModal #add').text('Ajouter')
+  $('#fridgeAddModal').modal('show');
 }
 
 
@@ -134,6 +116,7 @@ function click_edit_fridge() {
   }
   $('#fridgeAddModal #delete').show();
   $("#fridgeAddModal h5#itemtitle").text('Editer');
+  $("#fridgeAddModal input#textbox").show();
   $('#current_quantity').show();
   $("#label_current_quantity").show();
   $('#fridgeAddModal #add').prop('disabled', false);
@@ -143,7 +126,6 @@ function click_edit_fridge() {
 }
 
 
-/* When someone clicks on Use */
 function click_use() {
   data = $(this).parent().parent().data('data');
   items = data.split(';');
@@ -259,8 +241,7 @@ function update_list(id) {
       } else if (id == 'shopping') {
         $("#itemlist").on('click', "span.bg-success", click_bought);
         $("#itemlist").on('click', "span.bg-danger", click_edit_shopping);
-      }
-      else if (id == 'todo') {
+      } else if (id == 'todo') {
         $("#itemlist").on('click', "span.bg-danger", click_edit_shopping);
         $("#itemlist").on('click', "span.bg-success", click_done);
       }
@@ -362,7 +343,6 @@ function use_fridge(dest) {
 }
 
 
-/* When someone clicks on Bought */
 function click_bought() {
   data = $(this).parent().parent().text();
   console.log(data);
@@ -381,7 +361,6 @@ function click_bought() {
 }
 
 
-/* When someone clicks on Edit */
 function click_edit_shopping() {
   what = $(this).parent().parent().text();
   what = what.split('\n')[1].trim();
