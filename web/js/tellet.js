@@ -40,6 +40,11 @@ function update_quantity(e) {
   }
   msg = 'Quantité restante: ' + String(res) + '/' + q + ' ' + unit;
   $("#original_q").html(msg);
+
+  if (res == 0)
+    $("#use").text("Utiliser et retirer");
+  else
+    $("#use").text("Utiliser");
 }
 
 
@@ -81,6 +86,7 @@ function openFridgeModal() {
   $('#quantity').show();
   $('#label_quantity').show();
   $('input#textbox').show();
+  $("#use").text("Utiliser");
 
   $('#current_quantity').hide();
   $('#unitpc').click();
@@ -320,6 +326,10 @@ function use_fridge(dest) {
         $('#notfoundModal').modal('show');
         return true;
       } else {
+        if (q - used_q == 0){
+          console.log("Removing from fridge: " + item)
+          call_action('/fridge', item, 'removed');
+        }
         update_list(dest)
         reshop = $('#fridgeUseModal input#flexSwitchCheckDefault').is(':checked');
         if (reshop == true) {
