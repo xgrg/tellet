@@ -113,6 +113,8 @@ function click_edit_fridge() {
   $("input#textbox").val(label);
   $("input#current_quantity").val(q);
   $("input#expirydate").val(ed);
+  $('#fridgeAddModal div.form-switch').hide();
+
 
   if (unit == 'pc') {
     $('#unitpc').click();
@@ -156,6 +158,16 @@ function click_use() {
 
 
 function add_to_fridge(then) {
+  checked = $('#fridgeAddModal input#flexSwitch').is(':checked');
+
+  if (!checked & then == 'shopping') {
+    what = $("#fridgeAddModal input#textbox").val();
+    console.log("what "+what);
+    update_list('shopping');
+    call_action('/shopping', what.split(';')[0], 'bought');
+    return
+  }
+
   dest = then;
   if (then == "shopping")
     dest = 'fridge';
@@ -366,7 +378,7 @@ function click_bought() {
   $("#fridgeAddModal input#expirydate").val("");
   $('#fridgeAddModal #unitpc').click();
   $("#fridgeAddModal #delete").hide()
-
+  $('#fridgeAddModal div.form-switch').show();
   $("#fridgeAddModal input#textbox").parent().hide();
   $("h5#itemtitle").text(what);
   $('#fridgeAddModal').modal('show');
