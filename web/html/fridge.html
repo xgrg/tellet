@@ -13,7 +13,7 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
-<script type="text/javascript" src="{{static_url("js/tellet.js")}}"></script>
+  <script type="text/javascript" src="{{static_url("js/tellet.js")}}"></script>
 
   <link href="css/style.css" rel="stylesheet">
 
@@ -25,12 +25,12 @@
     <div class="row">
 
       <div id="fridge" class="col-md-6">
-            <a id="openAddModal" href="#" class="btn btn-secondary btn-lg" role="button">
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 64 64" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
-                <path data-name="layer2" d="M12 26v32a4 4 0 0 0 4 4h32a4 4 0 0 0 4-4V26M48 2H16a4 4 0 0 0-4 4v20h40V6a4 4 0 0 0-4-4z" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
-                <path data-name="layer1" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M20 10v8m0 16v10"></path>
-              </svg>
-              <br />Ajouter</a>
+        <a id="openAddModal" href="#" class="btn btn-secondary btn-lg" role="button">
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" viewBox="0 0 64 64" role="img" xmlns:xlink="http://www.w3.org/1999/xlink">
+            <path data-name="layer2" d="M12 26v32a4 4 0 0 0 4 4h32a4 4 0 0 0 4-4V26M48 2H16a4 4 0 0 0-4 4v20h40V6a4 4 0 0 0-4-4z" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="4"></path>
+            <path data-name="layer1" fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M20 10v8m0 16v10"></path>
+          </svg>
+          <br />Ajouter</a>
         <br><br>
 
         {{list}}
@@ -48,26 +48,28 @@
       $("#fridge #openAddModal").click(openFridgeModal);
 
       $('#fridgeAddModal #add').click(function() {add_to_fridge("fridge")});
-      $('#fridgeAddModal #delete').click(function(){
+
+      $('#fridgeAddModal #delete').click(function() {
         item = $(this).closest('#fridgeAddModal').attr('data-data');
         console.log("Removing from fridge: " + item)
         call_action('/fridge', item, 'removed');
         $("#itemlist").on('click', "span.bg-success", click_use);
         $("#itemlist").on('click', "span.bg-danger", click_edit_fridge);
       });
-      $('#fridgeUseModal #use').click(function(){use_fridge("fridge")});
 
-      $('#fridgeAddModal input#textbox').on('input', function(e){
+      $('#fridgeUseModal #use').click(function() {use_fridge("fridge")});
+
+      $('#fridgeAddModal input#textbox').on('input', function(e) {
         $('#fridgeAddModal #add').prop('disabled', is_modal_invalid(e.target))
       })
 
       $('#fridgeAddModal input#expirydate').on('input', update_quantity)
       $('#fridgeUseModal input#quantity').on('input', update_quantity)
 
-      $('#fridgeAddModal input#quantity').on('input', function(e){
+      $('#fridgeAddModal input#quantity').on('input', function(e) {
         $('#fridgeAddModal #add').prop('disabled', is_modal_invalid(e.target))
       })
-      $('#fridgeAddModal input#current_quantity').on('input', function(e){
+      $('#fridgeAddModal input#current_quantity').on('input', function(e) {
         $('#fridgeAddModal #add').prop('disabled', is_modal_invalid(e.target))
       })
 
@@ -76,19 +78,19 @@
       $("span.bg-success").click(click_use)
 
 
-      $("input#unitpc").click(function(){
-          $('#quantity').val(100);
-          $('#quantity').prop('disabled', true);
-          parent = $("#quantity").closest('.modal').attr('id');
-          e = $('#' + parent + ' #add');
-          e.prop('disabled', is_modal_invalid(e));
+      $("input#unitpc").click(function() {
+        $('#quantity').val(100);
+        $('#quantity').prop('disabled', true);
+        parent = $("#quantity").closest('.modal').attr('id');
+        e = $('#' + parent + ' #add');
+        e.prop('disabled', is_modal_invalid(e));
       });
 
-      $("input#unitunit").click(function(){
-          $('#quantity').val("");
-          parent = $("#quantity").closest('.modal').attr('id');
-          $('#' + parent + ' #add').prop('disabled', true);
-          $('#quantity').prop('disabled', false);
+      $("input#unitunit").click(function() {
+        $('#quantity').val("");
+        parent = $("#quantity").closest('.modal').attr('id');
+        $('#' + parent + ' #add').prop('disabled', true);
+        $('#quantity').prop('disabled', false);
       });
 
     });
