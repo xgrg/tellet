@@ -80,6 +80,8 @@ function openFridgeModal() {
   $('#fridgeAddModal #delete').hide();
   $('#quantity').show();
   $('#label_quantity').show();
+  $('input#textbox').show();
+
   $('#current_quantity').hide();
   $('#unitpc').click();
 
