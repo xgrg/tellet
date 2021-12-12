@@ -51,10 +51,9 @@
       $('#fridgeAddModal #delete').click(function(){
         item = $(this).closest('#fridgeAddModal').attr('data-data');
         console.log("Removing from fridge: " + item)
-        $("span.bg-danger").click(click_edit_fridge)
-        $("span.bg-success").click(click_use)
-
         call_action('/fridge', item, 'removed');
+        $("#itemlist").on('click', "span.bg-success", click_use);
+        $("#itemlist").on('click', "span.bg-danger", click_edit_fridge);
       });
       $('#fridgeUseModal #use').click(function(){use_fridge("fridge")});
 
