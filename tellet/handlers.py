@@ -339,13 +339,12 @@ class AddHandler(BaseHandler):
         # then = str(self.get_argument("then", to))
 
         print((username, 'adding', what.split('\n')[0], 'to', to))
-        if to != 'log':
+        if to not in ['log', 'reports']:
             shopping = self.add_to_list(what, to)
             print(shopping)
             self.write(json.dumps(True))
         else: # log
             j = json.load(open(self.fp))
-
 
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
             entry = (dt, username, 'did', what, to)
