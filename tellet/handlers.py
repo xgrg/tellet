@@ -102,20 +102,22 @@ class MainHandler(BaseHandler):
             import numpy as np
             gt = np.sum([int(row.split(';')[2]) for i, row in greg.what.iteritems()])
             ct = np.sum([int(row.split(';')[2]) for i, row in cha.what.iteritems()])
-            _lc = cha.what.reset_index().iloc[0]
-            _lg = greg.what.reset_index().iloc[0]
-            print(_lc)
-            ts_cha = datetime.strftime(datetime.strptime(_lc.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
-            ts_greg = datetime.strftime(datetime.strptime(_lg.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
-            cha_com = ' (' +  _lc.what.split(';')[-1] +')'
-            greg_com = ' (' +  _lg.what.split(';')[-1] +')'
-            if cha_com == ' ()':
-                cha_com = ''
-            if greg_com == ' ()':
-                greg_com = ''
+            last_cha, last_greg = '', ''
 
-            last_cha =  _lc.what.split(';')[0] + cha_com + ' (' + ts_cha + ')'
-            last_greg =  _lg.what.split(';')[0] + greg_com + ' (' + ts_greg + ')'
+            if len(cha) != 0:
+                _lc = cha.what.reset_index().iloc[0]
+                ts_cha = datetime.strftime(datetime.strptime(_lc.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
+                cha_com = ' (' +  _lc.what.split(';')[-1] +')'
+                if cha_com == ' ()':
+                    cha_com = ''
+                last_cha =   ' - ' + _lc.what.split(';')[0] + cha_com + ' (' + ts_cha + ')'
+            if len(greg) != 0:
+                _lg = greg.what.reset_index().iloc[0]
+                ts_greg = datetime.strftime(datetime.strptime(_lg.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
+                greg_com = ' (' +  _lg.what.split(';')[-1] +')'
+                if greg_com == ' ()':
+                    greg_com = ''
+                last_greg =  ' - ' + _lg.what.split(';')[0] + greg_com + ' (' + ts_greg + ')'
 
 
             opt = {'color': 'bs-callout-info',
@@ -127,8 +129,8 @@ class MainHandler(BaseHandler):
                    'last_greg': last_greg}
 
             callout = callout + '<div class="bs-callout {color}">'\
-                                'Cha: <b>{cha}</b> 🕑 {ct} - {last_cha} <br> '\
-                                'Greg: <b>{greg}</b> 🕑 {gt} - {last_greg}</div>'.format(**opt)
+                                'Cha: <b>{cha}</b> 🕑 {ct}{last_cha} <br> '\
+                                'Greg: <b>{greg}</b> 🕑 {gt}{last_greg}</div>'.format(**opt)
 
             # is it laundry day
             wd = datetime.now().weekday()
