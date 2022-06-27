@@ -72,14 +72,16 @@
       </div>
     </div>
     <br>
-    <a href="auth/logout"><button type="button" class="btn btn-warning">Logout</button>
+    <a href="auth/logout?id={{ws}}"><button type="button" class="btn btn-warning">Logout</button>
     </a>
     <br>
     <br>
     <div class="row">
       <div class="col-md-6">
         <button type="button" class="btn btn-secondary">
-          Version {{version}}</button>
+          Version {{version}}</button><br>
+        <button type="button" class="btn btn-secondary">
+          Logged as {{username}} in {{ws}}</button>
       </div>
     </div>
   </div>

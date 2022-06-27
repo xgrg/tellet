@@ -11,13 +11,13 @@ STATIC_PATH = op.join(DIRNAME, 'web')
 TEMPLATE_PATH = op.join(DIRNAME, 'web')
 COOKIE_SECRET = 'L8LwECiNRxq2N0N2eGxx9MZlrpmuMEimlydNX/vt1LP='
 print(DIRNAME)
-
+global params
 
 class Application(tornado.web.Application):
     def __init__(self, args, config):
 
         fp = args.filepath
-        params = {'fp': fp}
+        params = {'session': {'fp':fp}}
 
         # If fp does not exist, then create it from empty template
         if not op.isfile(fp):

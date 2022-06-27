@@ -20,10 +20,10 @@
                 <span id="reauth-email" class="reauth-email"></span>
                 <center><div class="btn-group" role="group" aria-label="Basic radio toggle button group">
                 <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="btnradio1">Cha</label>
+                <label class="btn btn-outline-primary" for="btnradio1">{{p1}}</label>
 
                 <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                <label class="btn btn-outline-primary" for="btnradio2">Greg</label>
+                <label class="btn btn-outline-primary" for="btnradio2">{{p0}}</label>
               </div></center><br>
                 <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Entrer</button>
 
@@ -39,19 +39,21 @@
 $(document).ready(function() {
        $(".btn-signin").click(function(e) {
            e.preventDefault();
+           ws = "{{ws}}";
            username = 'error';
            if (document.getElementById("btnradio1").checked){
-             username = "Cha";
+             username = "{{p1}}";
            }
            else if (document.getElementById("btnradio2").checked){
-              username = "Greg";
+              username = "{{p0}}";
            }
 
            //console.log($('#username')[0].value)
            $.ajax({
              type: "POST",
              url: "/auth/login",
-             data: {"username": username},
+             data: {"username": username,
+                    "workspace": ws},
              dataType: 'json',
              success: function(data) {
                console.log(data)

@@ -1,6 +1,9 @@
+from tellet import get_users
 
-def get_doughnut(df, label='My dataset'):
-    labels = ['Greg', 'Cha']
+
+
+def get_doughnut(df, label='My dataset', ws='cha'):
+    labels = get_users()[ws]
     data = []
     for i in labels:
         data.append(len(df.query('who == "%s" & action == "did"' % i)))
@@ -17,8 +20,8 @@ def get_doughnut(df, label='My dataset'):
     return config
 
 
-def get_radar(df, label='My dataset'):
-    labels = ['Greg', 'Cha']
+def get_radar(df, label='My dataset', ws='cha'):
+    labels = get_users()[ws]
 
     actions = ['aspirateur', 'lavevaisselle', 'linge', 'lessive',
                'litière', 'nettoyer', 'pavé', 'douche', 'wc', 'piscine',
@@ -72,7 +75,8 @@ def get_radar(df, label='My dataset'):
     return config
 
 
-def get_stacked_doughnut(df):
+def get_stacked_doughnut(df, ws='cha'):
+    labels = get_users()[ws]
     sorted_actions = {}
     for i, row in df.iterrows():
         if row.action != 'did' or str(row['where']) != 'reports': continue
@@ -83,16 +87,16 @@ def get_stacked_doughnut(df):
         sorted_actions[row.who].setdefault(duration, [])
         sorted_actions[row.who][duration].append(what)
 
-    d1 = [len(sorted_actions.get('Cha', {}).get(e, [])) for e in '012345']
-    d2 = [len(sorted_actions.get('Greg', {}).get(e, [])) for e in '012345']
+    d1 = [len(sorted_actions.get(labels[0], {}).get(e, [])) for e in '012345']
+    d2 = [len(sorted_actions.get(labels[1], {}).get(e, [])) for e in '012345']
 
     data = {'labels': ['<1 min', '1-7 min', '10-15 min', '20-30 min',
                        '>30 min', '>2 h'],
-            'datasets': [{'label': 'Cha',
+            'datasets': [{'label': labels[1],
                           'data': d1,
                           'borderColor': 'rgb(255, 99, 132)',
                           'backgroundColor': 'rgba(255, 99, 132, 0.2)'},
-                         {'label': 'Greg',
+                         {'label': labels[0],
                           'data': d2,
                           'borderColor': 'rgb(54, 162, 235)',
                           'backgroundColor': 'rgba(54, 162, 235, 0.2)'}]}

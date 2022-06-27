@@ -6,6 +6,7 @@ from datetime import datetime
 import os.path as op
 
 
+
 class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie("user")
@@ -24,8 +25,8 @@ class My404Handler(tornado.web.RequestHandler):
         self.redirect('/')
 
 
-def _initialize(self, fp):
-    self.fp = fp
+def _initialize(self, session):
+    self.session = session
 
 
 def get_color_ndays(n, cutoffs=[7, 15], ascending=True):
@@ -48,15 +49,20 @@ def get_color_ndays(n, cutoffs=[7, 15], ascending=True):
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
+        from tellet import get_users
+        print(self.session)
+        labels = get_users()[self.session['ws']]
+        print(labels)
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s has just logged in.' % username)
-        import git
-        repo = git.Repo(op.dirname(op.dirname(__file__)))
-        commit = list(repo.iter_commits(max_count=1))[0]
-        dt = datetime.fromtimestamp(commit.committed_date)
-        version = datetime.strftime(dt, '%Y%m%d-%H%M%S')
+        # import git
+        # repo = git.Repo(op.dirname(op.dirname(__file__)))
+        # commit = list(repo.iter_commits(max_count=1))[0]
+        # dt = datetime.fromtimestamp(commit.committed_date)
+        version = 'Heroku ' #+ datetime.strftime(dt, '%Y%m%d-%H%M%S')
 
-        loglist = json.load(open(self.fp))['log']
+        j = hk.dump_to_json(self.session['ws'])
+        loglist = j['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
         df = df.sort_index(ascending=False)
@@ -97,40 +103,37 @@ class MainHandler(BaseHandler):
                           ' ({who}{comments})</div>'''.format(**opt)
 
             # current score + last actions
-            cha = rp.query('who == "Cha"')
-            greg = rp.query('who == "Greg"')
+            p0, p1 = labels
+
+            cha = rp.query('who == "%s"'%p0)
+            greg = rp.query('who == "%s"'%p1)
             import numpy as np
             gt = np.sum([int(row.split(';')[2]) for i, row in greg.what.iteritems()])
             ct = np.sum([int(row.split(';')[2]) for i, row in cha.what.iteritems()])
-            last_cha, last_greg = '', ''
 
-            if len(cha) != 0:
-                _lc = cha.what.reset_index().iloc[0]
-                ts_cha = datetime.strftime(datetime.strptime(_lc.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
-                cha_com = ' (' +  _lc.what.split(';')[-1] +')'
-                if cha_com == ' ()':
-                    cha_com = ''
-                last_cha =   ' - ' + _lc.what.split(';')[0] + cha_com + ' (' + ts_cha + ')'
-            if len(greg) != 0:
-                _lg = greg.what.reset_index().iloc[0]
-                ts_greg = datetime.strftime(datetime.strptime(_lg.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
-                greg_com = ' (' +  _lg.what.split(';')[-1] +')'
-                if greg_com == ' ()':
-                    greg_com = ''
-                last_greg =  ' - ' + _lg.what.split(';')[0] + greg_com + ' (' + ts_greg + ')'
 
+            def count_each(cha):
+                last_cha = ''
+                if len(cha) != 0:
+                    _lc = cha.what.reset_index().iloc[0]
+                    ts_cha = datetime.strftime(datetime.strptime(_lc.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
+                    cha_com = ' (' +  _lc.what.split(';')[-1] +')'
+                    if cha_com == ' ()':
+                        cha_com = ''
+                    last_cha =   ' - ' + _lc.what.split(';')[0] + cha_com + ' (' + ts_cha + ')'
+                return last_cha
 
             opt = {'color': 'bs-callout-info',
                    'greg': len(greg),
                    'cha': len(cha),
-                   'gt': gt,
+                   'gt': gt, 'p0':p0, 'p1': p1,
                    'ct': ct,
-                   'last_cha': last_cha,
-                   'last_greg': last_greg}
+                   'last_cha': count_each(cha),
+                   'last_greg': count_each(greg)}
 
             callout = callout + '<div class="bs-callout {color}">'\
-                                'Cha: <b>{cha}</b> 🕑 {ct}{last_cha} <br> '\
-                                'Greg: <b>{greg}</b> 🕑 {gt}{last_greg}</div>'.format(**opt)
+                                '{p0}: <b>{cha}</b> 🕑 {ct}{last_cha} <br> '\
+                                '{p1}: <b>{greg}</b> 🕑 {gt}{last_greg}</div>'.format(**opt)
 
             # is it laundry day
             wd = datetime.now().weekday()
@@ -143,7 +146,8 @@ class MainHandler(BaseHandler):
                       'Demain jour de lessive &nbsp;'\
                       '<span class="badge bg-warning">Rappel</span></div>'''
 
-        self.render("html/index.html", version=version, callout=callout)
+        self.render("html/index.html", version=version, callout=callout,
+                    ws=self.session['ws'], username=username)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -152,12 +156,15 @@ class MainHandler(BaseHandler):
 class ListHandler():
     def remove_from_list(self, what, which_list, action):
         username = str(self.current_user[1:-1], 'utf-8')
-        that_list = json.load(open(self.fp))[which_list]
+        #that_list = json.load(open(self.fp))[which_list]
+        j = hk.dump_to_json(self.session['ws'])
+        that_list = j[which_list]
 
         matches = difflib.get_close_matches(what, that_list)
         print(what, that_list, matches)
         dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
-        j = json.load(open(self.fp))
+        #j = json.load(open(self.fp))
+        j = hk.dump_to_json(self.session['ws'])
 
         if len(matches) == 0:
             action = 'tried_to_%s' % action
@@ -169,7 +176,8 @@ class ListHandler():
 
         entry = (dt, username, action, what, which_list)
         j['log'].append(entry)
-        json.dump(j, open(self.fp, 'w'), indent=4)
+        #json.dump(j, open(self.fp, 'w'), indent=4)
+        hk.dump_to_db(j, self.session['ws'])
         return res
 
     def perform_action(self):
@@ -199,7 +207,9 @@ class ListHandler():
         username = str(self.current_user[1:-1], 'utf-8')
 
         print('\n*** %s is looking at %s.' % (username, self._id))
-        shopping = json.load(open(self.fp))[self._id]
+        #shopping = json.load(open(self.fp))[self._id]
+        j = hk.dump_to_json(self.session['ws'])
+        shopping = j[self._id]
         if len(shopping) == 0:
             sl = '<div id="itemlist">Liste vide !</div>'
         else:
@@ -240,7 +250,9 @@ class ListHandler():
                 res.extend(each)
             return res
 
-        j = json.load(open(self.fp))[self._id]
+        #j = json.load(open(self.fp))[self._id]
+        j = hk.dump_to_json(self.session['ws'])
+        j = j[self._id]
         if len(j) == 0:
             list_html = '<div id="itemlist">Liste vide !</div>'
             return list_html
@@ -355,7 +367,8 @@ class AddHandler(BaseHandler):
     def add_to_list(self, what, which_list):
         username = str(self.current_user[1:-1], 'utf-8')
 
-        j = json.load(open(self.fp))
+        #j = json.load(open(self.fp))
+        j = hk.dump_to_json(self.session['ws'])
         that_list = j[which_list]
         that_list.append(what)
         j[which_list] = that_list
@@ -364,7 +377,8 @@ class AddHandler(BaseHandler):
         entry = (dt, username, 'add', what, which_list)
         j['log'].append(entry)
 
-        json.dump(j, open(self.fp, 'w'), indent=4)
+        #json.dump(j, open(self.fp, 'w'), indent=4)
+        hk.dump_to_db(j, self.session['ws'])
         return that_list
 
     @tornado.web.authenticated
@@ -380,12 +394,14 @@ class AddHandler(BaseHandler):
             print(shopping)
             self.write(json.dumps(True))
         else: # log
-            j = json.load(open(self.fp))
+            #j = json.load(open(self.fp))
+            j = hk.dump_to_json(self.session['ws'])
 
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
             entry = (dt, username, 'did', what, to)
             j['log'].append(entry)
-            json.dump(j, open(self.fp, 'w'), indent=4)
+            json.dump(j, open(self.session['fp'], 'w'), indent=4)
+            hk.dump_to_db(j, self.session['ws'])
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -395,7 +411,8 @@ class EditHandler(BaseHandler):
     def add_to_list(self, what, which_list, item):
         username = str(self.current_user[1:-1], 'utf-8')
 
-        j = json.load(open(self.fp))
+        #j = json.load(open(self.fp))
+        j = hk.dump_to_json(self.session['ws'])
         that_list = j[which_list]
         i = that_list.index(item)
         that_list.remove(item)
@@ -406,7 +423,8 @@ class EditHandler(BaseHandler):
         entry = (dt, username, 'edit', what, which_list)
         j['log'].append(entry)
 
-        json.dump(j, open(self.fp, 'w'), indent=4)
+        #json.dump(j, open(self.fp, 'w'), indent=4)
+        hk.dump_to_db(j, self.session['ws'])
         return that_list
 
     @tornado.web.authenticated
@@ -423,12 +441,13 @@ class EditHandler(BaseHandler):
             shopping = self.add_to_list(what, to, item)
             self.write(json.dumps(True))
         else: # log
-            j = json.load(open(self.fp))
-
+            #j = json.load(open(self.fp))
+            j = hk.dump_to_json(self.session['ws'])
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
             entry = (dt, username, 'did', what, to)
             j['log'].append(entry)
-            json.dump(j, open(self.fp, 'w'), indent=4)
+            #json.dump(j, open(self.fp, 'w'), indent=4)
+            hk.dump_to_db(j, self.session['ws'])
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -440,7 +459,9 @@ class StatsHandler(BaseHandler):
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s is looking at stats.' % username)
 
-        loglist = json.load(open(self.fp))['log']
+        #loglist = json.load(open(self.fp))['log']
+        j = hk.dump_to_json(self.session['ws'])
+        loglist = j['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         data = pd.DataFrame(loglist, columns=columns).set_index('ts')
         df = data.query('where != "reports"')
@@ -462,7 +483,9 @@ class StatsHandler(BaseHandler):
         self.render("html/stats.html", reports=reports, log=log)
 
     def post(self):
-        loglist = json.load(open(self.fp))['log']
+        #loglist = json.load(open(self.fp))
+        j = hk.dump_to_json(self.session['ws'])
+        loglist = j['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
 
@@ -501,28 +524,25 @@ class AuthLogoutHandler(BaseHandler):
 
 class AuthLoginHandler(BaseHandler):
     def get(self):
+        from tellet import get_users
+        ws = self.get_argument('id', 'cha')
+        if ws not in list(get_users().keys()):
+            ws = 'cha'
+        p0, p1 = get_users()[ws]
         try:
             errormessage = self.get_argument("error")
         except Exception:
             errormessage = ""
 
-        self.render("html/login.html", errormessage=errormessage,)
-
-    def check_permission(self, username):
-        if username in ['Cha', 'Greg']:
-            print(username)
-            return True
+        self.render("html/login.html", p0=p0, p1=p1, ws=ws, errormessage=errormessage,)
 
     def post(self):
         username = str(self.get_argument("username", ""))
+        ws = str(self.get_argument("workspace", ""))
+        self.set_current_user(username)
+        self.session['ws'] = ws
+        self.write(json.dumps([]))
 
-        auth = self.check_permission(username)
-        if auth:
-            self.set_current_user(username)
-            self.write(json.dumps([]))
-        else:
-            error_msg = u"?error=" + tornado.escape.url_escape("Wrong login/password.")
-            self.redirect(u"/auth/login/" + error_msg)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
