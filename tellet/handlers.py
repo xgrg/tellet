@@ -546,7 +546,6 @@ class ReportsHandler(BaseHandler):
             html_reports += tpl2.format(buttons=''.join(reports[i:i+3]))
             i += 3
 
-
         self.render("html/reports.html", reports=html_reports)
 
     def initialize(self, **kwargs):
@@ -556,22 +555,20 @@ class ReportsHandler(BaseHandler):
 class AuthLogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie("user")
-        self.redirect(self.get_argument("next", "/"))
+        self.redirect("/")
 
 
 class AuthLoginHandler(BaseHandler):
     def get(self):
         from tellet import get_users
-        ws = self.get_argument('id', 'cha')
-        if ws not in list(get_users().keys()):
-            ws = 'cha'
-        p0, p1 = get_users()[ws]['users']
+        ws = self.get_argument('id', self.session.get('ws', ''))
         try:
             errormessage = self.get_argument("error")
         except Exception:
             errormessage = ""
-
-        self.render("html/login.html", p0=p0, p1=p1, ws=ws, errormessage=errormessage,)
+        import json
+        self.render("html/login.html", ws=ws,
+                    errormessage=errormessage, users=json.dumps(get_users()))
 
     def post(self):
         username = str(self.get_argument("username", ""))
@@ -579,7 +576,6 @@ class AuthLoginHandler(BaseHandler):
         self.set_current_user(username)
         self.session['ws'] = ws
         self.write(json.dumps([]))
-
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)

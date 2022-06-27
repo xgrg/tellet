@@ -1,71 +1,115 @@
 <html>
+
 <head>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<link rel="stylesheet" href="{{static_url("css/style.css")}}" />
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
-<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="{{static_url("css/style.css")}}" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
 
 
-<script type="text/javascript" src="{{static_url("js/login.js")}}"></script>
+  <script type="text/javascript" src="{{static_url("js/login.js")}}"></script>
 </head>
+
 <body>
-    <div class="container">
-        <div class="card card-container">
-            <!-- <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->
-            <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
-            <p id="profile-name" class="profile-name-card"></p>
-            <form class="form-signin" method="post">
-                <span id="reauth-email" class="reauth-email"></span>
-                <center><div class="btn-group" role="group" aria-label="Basic radio toggle button group">
-                <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
-                <label class="btn btn-outline-primary" for="btnradio1">{{p1}}</label>
+  <div class="container">
 
-                <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-                <label class="btn btn-outline-primary" for="btnradio2">{{p0}}</label>
-              </div></center><br>
-                <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Entrer</button>
+    <div class="card card-container">
+      <!-- <img class="profile-img-card" src="//lh3.googleusercontent.com/-6V8xOA6M7BA/AAAAAAAAAAI/AAAAAAAAAAA/rzlHcD0KYwo/photo.jpg?sz=120" alt="" /> -->
+      <img id="profile-img" class="profile-img-card" src="//ssl.gstatic.com/accounts/ui/avatar_2x.png" />
+      <p id="profile-name" class="profile-name-card"></p>
 
-            </form><!-- /form -->
-            <div style='color:#dc34e6'>{{errormessage}}</div>
 
-        </div><!-- /card-container -->
-    </div><!-- /container -->
+      <form class="form-signin" method="post">
+        <div class="form-group">
+          <label for="exampleInputEmail1">Application ID</label>
+          <input type="email" class="form-control" id="appid" aria-describedby="idbox" placeholder="Enter ID">
+          <small id="emailHelp" class="form-text text-muted">Ton ID doit rester confidentiel.</small>
+        </div>
+        <span id="reauth-email" class="reauth-email"></span>
+        <center id="users">
+          <div class="btn-group" role="group" aria-label="Basic radio toggle button group">
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off" checked>
+            <label id="btnradiolbl1" class="btn btn-outline-primary" for="btnradio1"></label>
+
+            <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+            <label id="btnradiolbl2" class="btn btn-outline-primary" for="btnradio2"></label>
+          </div><br>
+          <span id="reauth-email" class="reauth-email"></span>
+
+          <button class="btn btn-lg btn-primary btn-block btn-signin" type="submit">Entrer</button>
+        </center>
+      </form><!-- /form -->
+      <div style='color:#dc34e6'>{{errormessage}}</div>
+
+    </div><!-- /card-container -->
+  </div><!-- /container -->
 </body>
+
 </html>
 <script>
 
-$(document).ready(function() {
-       $(".btn-signin").click(function(e) {
-           e.preventDefault();
-           ws = "{{ws}}";
-           username = 'error';
-           if (document.getElementById("btnradio1").checked){
-             username = "{{p1}}";
-           }
-           else if (document.getElementById("btnradio2").checked){
-              username = "{{p0}}";
-           }
+function update_users(e){
+  ws = "{{ws}}";
+  config = JSON.parse('{{users}}');
+  workspaces = Object.keys(config);
+  v = $("#appid").val();
 
-           //console.log($('#username')[0].value)
-           $.ajax({
-             type: "POST",
-             url: "/auth/login",
-             data: {"username": username,
-                    "workspace": ws},
-             dataType: 'json',
-             success: function(data) {
-               console.log(data)
-               window.location.href = '/'
-               return true;
-             },
-             error: function(data) {
-               console.log(data);
-               console.log('tutu')
-             }
-           });
+  if (workspaces.includes(v) === true){
+    users = config[v]["users"];
+    console.log(users);
 
-       });
+    document.getElementById("btnradiolbl1").innerHTML = users[0];
+    document.getElementById("btnradiolbl2").innerHTML = users[1];
+    $("#users").show();
+  }
+  else{
+    $("#users").hide();
+  }
+}
+
+
+  $(document).ready(function() {
+    ws = "{{ws}}";
+    $("#users").hide();
+    $("#appid").val(ws);
+    config = JSON.parse('{{users}}');
+    console.log(config);
+    workspaces = Object.keys(config);
+    console.log(ws);
+    $("#appid").keyup(update_users);
+    update_users();
+
+    $(".btn-signin").click(function(e) {
+      e.preventDefault();
+
+      username = 'error';
+      if (document.getElementById("btnradio1").checked) {
+        username = document.getElementById("btnradiolbl1").innerHTML;
+      } else if (document.getElementById("btnradio2").checked) {
+        username = document.getElementById("btnradiolbl2").innerHTML;
+      }
+
+      //console.log($('#username')[0].value)
+      $.ajax({
+        type: "POST",
+        url: "/auth/login",
+        data: {
+          "username": username,
+          "workspace": $("#appid").val()
+        },
+        dataType: 'json',
+        success: function(data) {
+          console.log(data)
+          window.location.href = '/'
+          return true;
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+
     });
+  });
 </script>
