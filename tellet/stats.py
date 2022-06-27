@@ -3,7 +3,7 @@ from tellet import get_users
 
 
 def get_doughnut(df, label='My dataset', ws='cha'):
-    labels = get_users()[ws]
+    labels = get_users()[ws]['users']
     data = []
     for i in labels:
         data.append(len(df.query('who == "%s" & action == "did"' % i)))
@@ -21,7 +21,7 @@ def get_doughnut(df, label='My dataset', ws='cha'):
 
 
 def get_radar(df, label='My dataset', ws='cha'):
-    labels = get_users()[ws]
+    labels = get_users()[ws]['users']
 
     actions = ['aspirateur', 'lavevaisselle', 'linge', 'lessive',
                'litière', 'nettoyer', 'pavé', 'douche', 'wc', 'piscine',
@@ -76,7 +76,7 @@ def get_radar(df, label='My dataset', ws='cha'):
 
 
 def get_stacked_doughnut(df, ws='cha'):
-    labels = get_users()[ws]
+    labels = get_users()[ws]['users']
     sorted_actions = {}
     for i, row in df.iterrows():
         if row.action != 'did' or str(row['where']) != 'reports': continue

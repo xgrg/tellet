@@ -1,2 +1,2 @@
-{"cha":["Greg", "Cha"],
-  "estele":["John", "Estele"]}
+{"cha":{"users":["Greg", "Cha"]},
+  "estele":{"users":["John", "Estele"], "reports":[["Anaëlle", "child", "anaelle"]]}}

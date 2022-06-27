@@ -51,7 +51,12 @@ class MainHandler(BaseHandler):
     def get(self):
         from tellet import get_users
         print(self.session)
-        labels = get_users()[self.session['ws']]
+        if 'ws' not in self.session.keys():
+            self.clear_cookie("user")
+            self.redirect('/auth/')
+
+
+        labels = get_users()[self.session['ws']]['users']
         print(labels)
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s has just logged in.' % username)
@@ -509,8 +514,40 @@ class ReportsHandler(BaseHandler):
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s is reporting.' % username)
+        from tellet import get_users
+        users = get_users()[self.session['ws']]
+        rep = users.get('reports', [])
+        default_reports = [('Passer le pavé', 'cleaning', 'pavé'),
+                           ('Passer l\'aspirateur', 'vacuum', 'aspirateur'),
+                           ('Faire une lessive', 'washingmachine', 'lessive'),
+                           ('Piscine', 'swimmingpool', 'piscine'),
+                           ('Nettoyer la douche', 'shower', 'douche'),
+                           ('Nettoyer une surface', 'cleaningsurface', 'nettoyer'),
+                           ('Nettoyer la litière', 'litterbox', 'litière'),
+                           ('Sortir poubelles', 'trashout', 'poubelles'),
+                           ('(D)étendre le linge', 'hangingclothes', 'linge'),
+                           ('Vider le lave-vaisselle', 'dishwasher', 'lavevaisselle'),
+                           ('Nettoyer WC', 'toilet', 'wc'),
+                           ('Préparer le repas', 'cooking', 'cuisine'),
+                           ('Arroser les plantes', 'waterplants', 'plantes')]
 
-        self.render("html/reports.html")
+        rep.extend(default_reports)
+        tpl2 = """<p><div class="col-md-6">{buttons}</div></p>"""
+        tpl = """<button type="button" class="btn btn-secondary">
+                    <img id="{id}" data-description="{desc}" data-value="{value}" width=75 src="/static/data/icons/{id}.png">
+                 </button> """
+        reports = []
+        for desc, id, value in rep:
+            reports.append(tpl.format(id=id, desc=desc, value=value))
+
+        html_reports = ''
+        i = 0
+        while i < len(reports):
+            html_reports += tpl2.format(buttons=''.join(reports[i:i+3]))
+            i += 3
+
+
+        self.render("html/reports.html", reports=html_reports)
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -528,7 +565,7 @@ class AuthLoginHandler(BaseHandler):
         ws = self.get_argument('id', 'cha')
         if ws not in list(get_users().keys()):
             ws = 'cha'
-        p0, p1 = get_users()[ws]
+        p0, p1 = get_users()[ws]['users']
         try:
             errormessage = self.get_argument("error")
         except Exception:
