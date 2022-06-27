@@ -491,9 +491,9 @@ class StatsHandler(BaseHandler):
 
         # n total
         from tellet import stats
-        graph1 = stats.get_doughnut(df, '# total de contributions')
-        graph2 = stats.get_radar(df, 'Répartition des actions')
-        graph3 = stats.get_stacked_doughnut(df)
+        graph1 = stats.get_doughnut(df, '# total de contributions', self.session['ws'])
+        graph2 = stats.get_radar(df, 'Répartition des actions', self.session['ws'])
+        graph3 = stats.get_stacked_doughnut(df, self.session['ws'])
         config = {'ntotal': graph1,
                   'radar': graph2,
                   'stacked': graph3}
