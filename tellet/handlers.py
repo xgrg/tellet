@@ -60,13 +60,13 @@ class MainHandler(BaseHandler):
         print(labels)
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s has just logged in.' % username)
-        # import git
-        # repo = git.Repo(op.dirname(op.dirname(__file__)))
-        # commit = list(repo.iter_commits(max_count=1))[0]
-        # dt = datetime.fromtimestamp(commit.committed_date)
-        version = 'Heroku ' #+ datetime.strftime(dt, '%Y%m%d-%H%M%S')
+        import git
+        repo = git.Repo(op.dirname(op.dirname(__file__)))
+        commit = list(repo.iter_commits(max_count=1))[0]
+        dt = datetime.fromtimestamp(commit.committed_date)
+        version = datetime.strftime(dt, '%Y%m%d-%H%M%S')
 
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         loglist = j['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
@@ -162,14 +162,14 @@ class ListHandler():
     def remove_from_list(self, what, which_list, action):
         username = str(self.current_user[1:-1], 'utf-8')
         #that_list = json.load(open(self.fp))[which_list]
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) #hk.dump_to_json(self.session['ws'])
         that_list = j[which_list]
 
         matches = difflib.get_close_matches(what, that_list)
         print(what, that_list, matches)
         dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
         #j = json.load(open(self.fp))
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
 
         if len(matches) == 0:
             action = 'tried_to_%s' % action
@@ -181,8 +181,8 @@ class ListHandler():
 
         entry = (dt, username, action, what, which_list)
         j['log'].append(entry)
-        #json.dump(j, open(self.fp, 'w'), indent=4)
-        hk.dump_to_db(j, self.session['ws'])
+        json.dump(j, open(self.session['fp'], 'w'), indent=4)
+        # hk.dump_to_db(j, self.session['ws'])
         return res
 
     def perform_action(self):
@@ -213,7 +213,7 @@ class ListHandler():
 
         print('\n*** %s is looking at %s.' % (username, self._id))
         #shopping = json.load(open(self.fp))[self._id]
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         shopping = j[self._id]
         if len(shopping) == 0:
             sl = '<div id="itemlist">Liste vide !</div>'
@@ -256,7 +256,7 @@ class ListHandler():
             return res
 
         #j = json.load(open(self.fp))[self._id]
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         j = j[self._id]
         if len(j) == 0:
             list_html = '<div id="itemlist">Liste vide !</div>'
@@ -373,7 +373,7 @@ class AddHandler(BaseHandler):
         username = str(self.current_user[1:-1], 'utf-8')
 
         #j = json.load(open(self.fp))
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         that_list = j[which_list]
         that_list.append(what)
         j[which_list] = that_list
@@ -382,8 +382,8 @@ class AddHandler(BaseHandler):
         entry = (dt, username, 'add', what, which_list)
         j['log'].append(entry)
 
-        #json.dump(j, open(self.fp, 'w'), indent=4)
-        hk.dump_to_db(j, self.session['ws'])
+        json.dump(j, open(self.session['fp'], 'w'), indent=4)
+        #hk.dump_to_db(j, self.session['ws'])
         return that_list
 
     @tornado.web.authenticated
@@ -399,14 +399,14 @@ class AddHandler(BaseHandler):
             print(shopping)
             self.write(json.dumps(True))
         else: # log
-            #j = json.load(open(self.fp))
-            j = hk.dump_to_json(self.session['ws'])
+
+            j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
 
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
             entry = (dt, username, 'did', what, to)
             j['log'].append(entry)
             json.dump(j, open(self.session['fp'], 'w'), indent=4)
-            hk.dump_to_db(j, self.session['ws'])
+            # hk.dump_to_db(j, self.session['ws'])
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -417,7 +417,7 @@ class EditHandler(BaseHandler):
         username = str(self.current_user[1:-1], 'utf-8')
 
         #j = json.load(open(self.fp))
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         that_list = j[which_list]
         i = that_list.index(item)
         that_list.remove(item)
@@ -428,8 +428,8 @@ class EditHandler(BaseHandler):
         entry = (dt, username, 'edit', what, which_list)
         j['log'].append(entry)
 
-        #json.dump(j, open(self.fp, 'w'), indent=4)
-        hk.dump_to_db(j, self.session['ws'])
+        json.dump(j, open(self.session['fp'], 'w'), indent=4)
+        # hk.dump_to_db(j, self.session['ws'])
         return that_list
 
     @tornado.web.authenticated
@@ -447,12 +447,12 @@ class EditHandler(BaseHandler):
             self.write(json.dumps(True))
         else: # log
             #j = json.load(open(self.fp))
-            j = hk.dump_to_json(self.session['ws'])
+            j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
             dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
             entry = (dt, username, 'did', what, to)
             j['log'].append(entry)
-            #json.dump(j, open(self.fp, 'w'), indent=4)
-            hk.dump_to_db(j, self.session['ws'])
+            json.dump(j, open(self.session['fp'], 'w'), indent=4)
+            # hk.dump_to_db(j, self.session['ws'])
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)
@@ -465,7 +465,7 @@ class StatsHandler(BaseHandler):
         print('\n*** %s is looking at stats.' % username)
 
         #loglist = json.load(open(self.fp))['log']
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         loglist = j['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         data = pd.DataFrame(loglist, columns=columns).set_index('ts')
@@ -489,7 +489,7 @@ class StatsHandler(BaseHandler):
 
     def post(self):
         #loglist = json.load(open(self.fp))
-        j = hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
         loglist = j['log']
         columns = ['ts', 'who', 'action', 'what', 'where']
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
