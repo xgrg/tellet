@@ -49,57 +49,54 @@
 
 </html>
 <script>
-
-function UrlExists(url)
-{
+  function UrlExists(url) {
     var http = new XMLHttpRequest();
     http.open('HEAD', url, false);
     http.send();
-    return http.status!=404;
-}
+    return http.status != 404;
+  }
 
-function update_pic(p1, p2){
-  default_img = '//ssl.gstatic.com/accounts/ui/avatar_2x.png'
-  console.log(p1, p2);
-  if (p2 == "default")
-    p2 = default_img;
+  function update_pic(p1, p2) {
+    default_img = '//ssl.gstatic.com/accounts/ui/avatar_2x.png'
+    console.log(p1, p2);
+    if (p2 == "default")
+      p2 = default_img;
 
-  if (p1 != p2){
-    if (p2 == default_img || UrlExists(p2) === false)
-       p2 = default_img
+    if (p1 != p2) {
+      if (p2 == default_img || UrlExists(p2) === false)
+        p2 = default_img
 
-
-    $("#profile-img").fadeOut(400, function() {
+      $("#profile-img").fadeOut(400, function() {
           $("#profile-img").attr('src', p2);
-      })
-      .fadeIn(400);
+        })
+        .fadeIn(400);
+    }
   }
-}
 
-function update_users(e){
-  ws = "{{ws}}";
-  config = JSON.parse('{{users}}');
-  workspaces = Object.keys(config);
-  v = $("#appid").val();
+  function update_users(e) {
+    ws = "{{ws}}";
+    config = JSON.parse('{{users}}');
+    workspaces = Object.keys(config);
+    v = $("#appid").val();
 
-  if (workspaces.includes(v) === true){
-    users = config[v]["users"];
-    console.log(users);
+    if (workspaces.includes(v) === true) {
+      users = config[v]["users"];
+      console.log(users);
 
-    document.getElementById("btnradiolbl1").innerHTML = users[0];
-    document.getElementById("btnradiolbl2").innerHTML = users[1];
-    $("#users").show();
+      document.getElementById("btnradiolbl1").innerHTML = users[0];
+      document.getElementById("btnradiolbl2").innerHTML = users[1];
+      $("#users").show();
 
-    imgURL = '{{static_url("data/profiles/")}}' + v + ".png"
-    update_pic($("#profile-img").attr('src'), imgURL);
+      imgURL = '{{static_url("data/profiles/")}}' + v + ".png"
+      update_pic($("#profile-img").attr('src'), imgURL);
 
+    } else {
+      $("#users").hide();
+
+      update_pic($("#profile-img").attr('src'), "default");
+
+    }
   }
-  else{
-    $("#users").hide();
-    update_pic($("#profile-img").attr('src'), "default");
-
-  }
-}
 
 
   $(document).ready(function() {
