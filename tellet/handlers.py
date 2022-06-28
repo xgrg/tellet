@@ -567,6 +567,7 @@ class AuthLoginHandler(BaseHandler):
         except Exception:
             errormessage = ""
         import json
+        ws = 'cha'
         self.render("html/login.html", ws=ws,
                     errormessage=errormessage, users=json.dumps(get_users()))
 
