@@ -529,7 +529,8 @@ class ReportsHandler(BaseHandler):
                            ('Vider le lave-vaisselle', 'dishwasher', 'lavevaisselle'),
                            ('Nettoyer WC', 'toilet', 'wc'),
                            ('Préparer le repas', 'cooking', 'cuisine'),
-                           ('Arroser les plantes', 'waterplants', 'plantes')]
+                           ('Arroser les plantes', 'waterplants', 'plantes'),
+                           ('Poules', 'chicken', 'chicken')]
 
         rep.extend(default_reports)
         tpl2 = """<p><div class="col-md-6">{buttons}</div></p>"""
