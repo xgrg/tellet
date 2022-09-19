@@ -25,7 +25,7 @@ def get_radar(df, label='My dataset', ws='cha'):
 
     actions = ['aspirateur', 'lavevaisselle', 'linge', 'lessive',
                'litière', 'nettoyer', 'pavé', 'douche', 'wc', 'piscine',
-               'poubelles', 'cuisine', 'autres']
+               'poubelles', 'cuisine', 'plantes', 'chicken', 'bricolage', 'autres']
     sorted_actions = {}
     for i, row in df.iterrows():
         if row.action != 'did' or str(row['where']) != 'reports': continue

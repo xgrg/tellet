@@ -1,2 +1,3 @@
-{"cha":{"users":["Greg", "Cha"], "reports":[["Bricolage", "diy", "bricolage"]]},
+{"cha":{"users":["Greg", "Cha"], "reports":[["Bricolage", "diy", "bricolage"],
+                                            ["Poules", "chicken", "chicken"]]},
   "estele":{"users":["John", "Estele"], "reports":[["Anaëlle", "child", "anaelle"]]}}
