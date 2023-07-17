@@ -25,7 +25,8 @@ class Application(tornado.web.Application):
                  'todo': [],
                  'log': [],
                  'fridge': [],
-                 'pharmacy': []}
+                 'pharmacy': [],
+                 'money': []}
             log.warning('File not found. Created %s' % fp)
             json.dump(d, open(fp, 'w'))
         else:

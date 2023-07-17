@@ -1,0 +1,35 @@
+<!-- Modal window: Adding item to money list  -->
+<div id="moneyAddModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 id="itemtitle" class="modal-title">Ajouter dépense</h5>
+                <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+            <p>
+                <label for="amount" id="label_amount">Montant</label>
+                <input id='amount' input class="form-control" type="number" placeholder="Montant" aria-label="Montant">
+            </p>
+            <p>
+                <label for="desc" id="label_desc">Description</label>
+                <input id="desc" input class="form-control" type="text" name="browser">
+            </p>
+            <p>
+                <label for="date">Date</label>
+                <input id='date' input class="form-control" type="number" placeholder="AAAAMMJJ" aria-label="Date">
+            </p>
+            <p>
+                <input id="textbox" input class="form-control" list="label" name="browser">
+                <datalist id="label">
+                </datalist>
+            </p>
+
+            <div class="modal-footer">
+                <button id="add" type="button" class="btn btn-success" data-bs-dismiss="modal">Ajouter</button>
+                <button type="button" class="btn btn-default" data-bs-dismiss="modal">Fermer</button>
+            </div>
+        </div>
+    </div>
+</div>

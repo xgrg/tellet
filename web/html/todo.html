@@ -21,6 +21,7 @@
 </head>
 
 <body>
+  
   <div class="container">
     <div class="row">
 
@@ -36,33 +37,25 @@
         <br><br>
         {{list}}
         <br>
+        {{reports}}
+        <br>
+
         <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
 
       </div>
 
     </div>
+
   </div>
-  {{modals}}
+  {{modals}}  
 
   <script>
-    function click_done() {
-      item = $(this).closest('#shoppingAddModal').attr('data-data');
-      console.log('Removing from todo: ' + item)
-      call_action('/todo', item, 'done');
-    }
-    $("span.bg-danger").click(click_edit_shopping)
-    $("span.bg-success").click(click_done)
-
-    $('#shoppingAddModal #add').click(function() {
-      add_to_shopping_list('todo', 'todo')
+     $('#moneyAddModal #add').click(function() {
+      add_to_money_list('money')
     });
-    $('#shoppingAddModal #delete').click(function() {
-      item = $(this).closest('#shoppingAddModal').attr('data-data');
-      console.log('Removing from todo: ' + item)
-      call_action('/todo', item, 'removed');
-    });
+    
 
-    $("#openAddModal").click(openShoppingModal);
+    $("#openAddModal").click(openMoneyModal);
   </script>
 
 </body>

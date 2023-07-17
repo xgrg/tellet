@@ -359,7 +359,33 @@ class TodoHandler(BaseHandler, ListHandler):
 
     @tornado.web.authenticated
     def get(self):
-        self._get_()
+        username = str(self.current_user[1:-1], 'utf-8')
+        print('\n*** %s is looking at stats.' % username)
+
+        #loglist = json.load(open(self.fp))['log']
+        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
+        loglist = j['log']
+        columns = ['ts', 'who', 'action', 'what', 'where']
+        data = pd.DataFrame(loglist, columns=columns).set_index('ts')
+        df = data.query('where == "money"')
+        df = df.sort_index(ascending=False)
+
+        tpl = '''
+        <style>
+            table.df { display: block;
+            overflow-x: auto;
+            white-space: nowrap;}
+            .df tbody tr:nth-child(even) { background-color: lightblue; }
+        </style>
+        '''
+        log = tpl + df.to_html(classes="df")
+        
+        from glob import glob
+        files = glob(op.join(op.dirname(op.dirname(__file__)),
+                              'web/html/modals/*.html'))
+        modals = '\n'.join([open(e).read() for e in files])
+
+        self.render("html/todo.html", modals=modals, reports=log)
 
     def post(self):
         self.perform_action()
@@ -394,7 +420,7 @@ class AddHandler(BaseHandler):
         # then = str(self.get_argument("then", to))
 
         print((username, 'adding', what.split('\n')[0], 'to', to))
-        if to not in ['log', 'reports']:
+        if to not in ['log', 'reports', 'money']:
             shopping = self.add_to_list(what, to)
             print(shopping)
             self.write(json.dumps(True))

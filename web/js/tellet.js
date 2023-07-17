@@ -98,6 +98,27 @@ function openFridgeModal() {
   $('#fridgeAddModal').modal('show');
 }
 
+function openMoneyModal() {
+  $('#moneyAddModal input#textbox').val('')
+
+  options = ['Roxane', 'maison', 'animaux', 'loisirs'];
+  html = '';
+  options.forEach(function(v) {
+    html += '<option value="' + v + '">';
+  });
+
+  var today = new Date();
+  var dd = String(today.getDate()).padStart(2, '0');
+  var mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+  var yyyy = today.getFullYear();
+
+  today = yyyy+ mm + dd;
+
+  $('#moneyAddModal input#date').val(today)
+
+  $('#moneyAddModal datalist#label').html(html)
+  $('#moneyAddModal').modal('show');
+}
 
 function click_edit_fridge() {
   what = $(this).parent().parent().attr('data-data')
@@ -434,6 +455,36 @@ function add_to_shopping_list(to, then) {
         $('#notfoundModal').modal('show');
       else
         update_list(then);
+      return true;
+    },
+    error: function(data) {
+      console.log(data);
+    }
+  });
+}
+
+function add_to_money_list(to, then) {
+
+  // Collecting details from shoppingAddModal
+  what = $("#moneyAddModal input#desc").val();
+  amount = $("#moneyAddModal input#amount").val();
+  label = $("#moneyAddModal input#textbox").val();
+  date = $("#moneyAddModal input#date").val();
+  what = what + ";" + amount + ";" + label + ";" + date;
+  console.log('add ' + what);
+  data = {
+    "what": what,
+    "to": to
+  }
+  action = '/add'
+
+  $.ajax({
+    type: "POST",
+    url: action,
+    data: data,
+    dataType: 'json',
+    success: function(data) {
+      console.log(data)      
       return true;
     },
     error: function(data) {
