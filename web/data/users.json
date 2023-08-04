@@ -1,5 +1,6 @@
 {"cha":{"users":["Greg", "Cha"], "reports":[["Bricolage", "diy", "bricolage"],
                                             ["Poules", "chicken", "chicken"],
                                             ["Bois","wood", "wood"],
-                                            ["Courrier", "mailbox", "courrier"]]},
+                                            ["Courrier", "mailbox", "courrier"],
+                                            ["Roxane", "child", "roxane"]},
   "estele":{"users":["John", "Estele"], "reports":[["Anaëlle", "child", "anaelle"]]}}
