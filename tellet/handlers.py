@@ -4,7 +4,14 @@ import difflib
 import pandas as pd
 from datetime import datetime
 import os.path as op
+from loguru import logger
+import git
+import numpy as np
+import json
 
+from glob import glob
+
+from tellet import stats, get_users
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -49,107 +56,122 @@ def get_color_ndays(n, cutoffs=[7, 15], ascending=True):
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        from tellet import get_users
-        print(self.session)
+        logger.info(f"{self.session = }")
         if 'ws' not in self.session.keys():
             self.clear_cookie("user")
             self.redirect('/auth/')
 
 
         labels = get_users()[self.session['ws']]['users']
-        print(labels)
+        logger.info(f'{labels = }')
         username = str(self.current_user[1:-1], 'utf-8')
-        print('\n*** %s has just logged in.' % username)
-        import git
+        logger.success(f'\n*** {username} has just logged in.')
+
+        # Get version tag
+
         repo = git.Repo(op.dirname(op.dirname(__file__)))
         commit = list(repo.iter_commits(max_count=1))[0]
         dt = datetime.fromtimestamp(commit.committed_date)
         version = datetime.strftime(dt, '%Y%m%d-%H%M%S')
+        logger.info(f'{version = }')
 
-        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
+        # Select reports
+        j = json.load(open(self.session['fp']))
+        
         loglist = j['log']
+        logger.success(f'JSON contents successfully loaded. ({len(j["log"])} entries)')
         columns = ['ts', 'who', 'action', 'what', 'where']
-        df = pd.DataFrame(loglist, columns=columns).set_index('ts')
-        df = df.sort_index(ascending=False)
-        rp = df.query('action == "did" & where == "reports"')
+        df = pd.DataFrame(loglist, columns=columns)#.set_index('ts')
+        #df = df.sort_index(ascending=False)
+        print(df.shape)
+        df.to_csv('/tmp/toto.csv')
+        # print(len(df[df['action'] == "did"]))
+        print(df['where'].unique())
+        print(df['action'].unique())
 
+        # rp = df.query('action == "did"') # & where == "reports"')
+        # logger.info(f'{len(rp)} reports collected.')
+
+        # Select specifics
         callout = ''
-        if not rp.empty:
-            rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
+        # if not rp.empty:
+        #     rp['what2'] = rp.apply(lambda row: row.what.split(';')[0], axis=1)
 
-            # last poubelle
-            lp = rp.query('what2 == "poubelles"')
-            if not lp.empty:
-                lp = lp.iloc[0]
-                dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
-                comments = lp.what.split(';')[-1]
-                if comments != '': comments = ' ' + comments
-                opt = {'ndays': dt.days,
-                       'who': lp.who,
-                       'comments': comments,
-                       'color': get_color_ndays(dt.days, [7,15], False)}
-                callout = '<div class="bs-callout bs-callout-info {color}">'\
-                          'Dernière poubelle il y a <strong>{ndays} jours</strong>'\
-                          ' ({who}{comments})</div>'''.format(**opt)
+        #     # last poubelle
+        #     lp = rp.query('what2 == "poubelles"')
+        #     if not lp.empty:
+        #         lp = lp.iloc[0]
+        #         dt = datetime.now() - datetime.strptime(lp.name, '%Y%m%d_%H%M%S')
+        #         comments = lp.what.split(';')[-1]
+        #         if comments != '': comments = ' ' + comments
+        #         opt = {'ndays': dt.days,
+        #                'who': lp.who,
+        #                'comments': comments,
+        #                'color': get_color_ndays(dt.days, [7,15], False)}
+        #         callout = '<div class="bs-callout bs-callout-info {color}">'\
+        #                   'Dernière poubelle il y a <strong>{ndays} jours</strong>'\
+        #                   ' ({who}{comments})</div>'''.format(**opt)
 
-            # last wc
-            lw = rp.query('what2 == "wc"')
-            if not lw.empty:
-                lw = lw.iloc[0]
-                dt = datetime.now() - datetime.strptime(lw.name, '%Y%m%d_%H%M%S')
-                comments = lw.what.split(';')[-1]
-                if comments != '': comments = ' ' + comments
-                opt = {'ndays': dt.days,
-                       'who': lw.who,
-                       'comments': comments,
-                       'color': get_color_ndays(dt.days, [7, 15], True)}
-                callout = callout + '<div class="bs-callout {color}">'\
-                          'Dernier nettoyage WC il y a <strong>{ndays} jours</strong>'\
-                          ' ({who}{comments})</div>'''.format(**opt)
+        #     # # last wc
+        #     # lw = rp.query('what2 == "wc"')
+        #     # if not lw.empty:
+        #     #     lw = lw.iloc[0]
+        #     #     dt = datetime.now() - datetime.strptime(lw.name, '%Y%m%d_%H%M%S')
+        #     #     comments = lw.what.split(';')[-1]
+        #     #     if comments != '': comments = ' ' + comments
+        #     #     opt = {'ndays': dt.days,
+        #     #            'who': lw.who,
+        #     #            'comments': comments,
+        #     #            'color': get_color_ndays(dt.days, [7, 15], True)}
+        #     #     callout = callout + '<div class="bs-callout {color}">'\
+        #     #               'Dernier nettoyage WC il y a <strong>{ndays} jours</strong>'\
+        #     #               ' ({who}{comments})</div>'''.format(**opt)
 
-            # current score + last actions
-            p0, p1 = labels
+        #     # current score + last actions
 
-            cha = rp.query('who == "%s"'%p0)
-            greg = rp.query('who == "%s"'%p1)
-            import numpy as np
-            gt = np.sum([int(row.split(';')[2]) for i, row in greg.what.iteritems()])
-            ct = np.sum([int(row.split(';')[2]) for i, row in cha.what.iteritems()])
+        #     # Counts per user
+        #     p0, p1 = labels
+
+        #     cha = rp.query('who == "%s"'%p0)
+        #     greg = rp.query('who == "%s"'%p1)
+        #     gt = 0 # np.sum([int(row.split(';')[2]) for i, row in greg.what.iteritems()])
+        #     ct = 0 # np.sum([int(row.split(';')[2]) for i, row in cha.what.iteritems()])
+        #     #logger.info(f'')
 
 
-            def count_each(cha):
-                last_cha = ''
-                if len(cha) != 0:
-                    _lc = cha.what.reset_index().iloc[0]
-                    ts_cha = datetime.strftime(datetime.strptime(_lc.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
-                    cha_com = ' (' +  _lc.what.split(';')[-1] +')'
-                    if cha_com == ' ()':
-                        cha_com = ''
-                    last_cha =   ' - ' + _lc.what.split(';')[0] + cha_com + ' (' + ts_cha + ')'
-                return last_cha
+        #     def count_each(cha):
+        #         last_cha = ''
+        #         if len(cha) != 0:
+        #             _lc = cha.what.reset_index().iloc[0]
+        #             ts_cha = datetime.strftime(datetime.strptime(_lc.ts, '%Y%m%d_%H%M%S'), '%d-%m-%Y %H:%M')
+        #             cha_com = ' (' +  _lc.what.split(';')[-1] +')'
+        #             if cha_com == ' ()':
+        #                 cha_com = ''
+        #             last_cha =   ' - ' + _lc.what.split(';')[0] + cha_com + ' (' + ts_cha + ')'
+        #         return last_cha
 
-            opt = {'color': 'bs-callout-info',
-                   'greg': len(greg),
-                   'cha': len(cha),
-                   'gt': gt, 'p0':p0, 'p1': p1,
-                   'ct': ct,
-                   'last_cha': count_each(cha),
-                   'last_greg': count_each(greg)}
+        #     opt = {'color': 'bs-callout-info',
+        #            'greg': len(greg),
+        #            'cha': len(cha),
+        #            'gt': gt, 'p0':p0, 'p1': p1,
+        #            'ct': ct,
+        #            'last_cha': count_each(cha),
+        #            'last_greg': count_each(greg)}
 
-            callout = callout + '<div class="bs-callout {color}">'\
-                                '{p0}: <b>{cha}</b> 🕑 {ct}{last_cha} <br> '\
-                                '{p1}: <b>{greg}</b> 🕑 {gt}{last_greg}</div>'.format(**opt)
+        #     callout = callout + '<div class="bs-callout {color}">'\
+        #                         '{p0}: <b>{cha}</b> 🕑 {ct}{last_cha} <br> '\
+        #                         '{p1}: <b>{greg}</b> 🕑 {gt}{last_greg}</div>'.format(**opt)
 
-            # is it laundry day
-            wd = datetime.now().weekday()
-            if wd == 2:
-                callout = callout + '<div class="bs-callout bs-callout-warning">'\
-                      '<strong>Jour de lessive</strong> &nbsp; '\
-                      '<span class="badge bg-warning">Rappel</span></div>'''
-            elif wd == 1:
-                callout = callout + '<div class="bs-callout bs-callout-warning">'\
-                      'Demain jour de lessive &nbsp;'\
-                      '<span class="badge bg-warning">Rappel</span></div>'''
+        #     # Is it laundry day
+        #     wd = datetime.now().weekday()
+        #     if wd == 2:
+        #         callout = callout + '<div class="bs-callout bs-callout-warning">'\
+        #               '<strong>Jour de lessive</strong> &nbsp; '\
+        #               '<span class="badge bg-warning">Rappel</span></div>'''
+        #     elif wd == 1:
+        #         callout = callout + '<div class="bs-callout bs-callout-warning">'\
+        #               'Demain jour de lessive &nbsp;'\
+        #               '<span class="badge bg-warning">Rappel</span></div>'''
 
         self.render("html/index.html", version=version, callout=callout,
                     ws=self.session['ws'], username=username)
@@ -161,15 +183,14 @@ class MainHandler(BaseHandler):
 class ListHandler():
     def remove_from_list(self, what, which_list, action):
         username = str(self.current_user[1:-1], 'utf-8')
-        #that_list = json.load(open(self.fp))[which_list]
-        j = json.load(open(self.session['fp'])) #hk.dump_to_json(self.session['ws'])
+        j = json.load(open(self.session['fp'])) 
         that_list = j[which_list]
 
         matches = difflib.get_close_matches(what, that_list)
-        print(what, that_list, matches)
+        logger.info(f'{what =} {that_list =} {matches = }')
         dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
-        #j = json.load(open(self.fp))
-        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
+
+        j = json.load(open(self.session['fp']))
 
         if len(matches) == 0:
             action = 'tried_to_%s' % action
@@ -182,7 +203,6 @@ class ListHandler():
         entry = (dt, username, action, what, which_list)
         j['log'].append(entry)
         json.dump(j, open(self.session['fp'], 'w'), indent=4)
-        # hk.dump_to_db(j, self.session['ws'])
         return res
 
     def perform_action(self):
@@ -211,16 +231,15 @@ class ListHandler():
     def _get_(self):
         username = str(self.current_user[1:-1], 'utf-8')
 
-        print('\n*** %s is looking at %s.' % (username, self._id))
-        #shopping = json.load(open(self.fp))[self._id]
-        j = json.load(open(self.session['fp'])) # hk.dump_to_json(self.session['ws'])
+        logger.info(f'\n*** {username} is looking at {self._id}.')
+
+        j = json.load(open(self.session['fp']))
         shopping = j[self._id]
         if len(shopping) == 0:
             sl = '<div id="itemlist">Liste vide !</div>'
         else:
             sl = self.get_list_html()
 
-        from glob import glob
         files = glob(op.join(op.dirname(op.dirname(__file__)),
                               'web/html/modals/*.html'))
         modals = '\n'.join([open(e).read() for e in files])
@@ -380,7 +399,6 @@ class TodoHandler(BaseHandler, ListHandler):
         '''
         log = tpl + df.to_html(classes="df")
         
-        from glob import glob
         files = glob(op.join(op.dirname(op.dirname(__file__)),
                               'web/html/modals/*.html'))
         modals = '\n'.join([open(e).read() for e in files])
@@ -409,7 +427,6 @@ class AddHandler(BaseHandler):
         j['log'].append(entry)
 
         json.dump(j, open(self.session['fp'], 'w'), indent=4)
-        #hk.dump_to_db(j, self.session['ws'])
         return that_list
 
     @tornado.web.authenticated
@@ -521,7 +538,6 @@ class StatsHandler(BaseHandler):
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
 
         # n total
-        from tellet import stats
         graph1 = stats.get_doughnut(df, '# total de contributions', self.session['ws'])
         graph2 = stats.get_radar(df, 'Répartition des actions', self.session['ws'])
         graph3 = stats.get_stacked_doughnut(df, self.session['ws'])
@@ -540,7 +556,6 @@ class ReportsHandler(BaseHandler):
     def get(self):
         username = str(self.current_user[1:-1], 'utf-8')
         print('\n*** %s is reporting.' % username)
-        from tellet import get_users
         users = get_users()[self.session['ws']]
         rep = users.get('reports', [])
         default_reports = [('Passer le pavé', 'cleaning', 'pavé'),
@@ -549,7 +564,6 @@ class ReportsHandler(BaseHandler):
                            ('Piscine', 'swimmingpool', 'piscine'),
                            ('Nettoyer la douche', 'shower', 'douche'),
                            ('Nettoyer une surface', 'cleaningsurface', 'nettoyer'),
-                           ('Nettoyer la litière', 'litterbox', 'litière'),
                            ('Sortir poubelles', 'trashout', 'poubelles'),
                            ('(D)étendre le linge', 'hangingclothes', 'linge'),
                            ('Vider le lave-vaisselle', 'dishwasher', 'lavevaisselle'),
@@ -586,13 +600,11 @@ class AuthLogoutHandler(BaseHandler):
 
 class AuthLoginHandler(BaseHandler):
     def get(self):
-        from tellet import get_users
         ws = self.get_argument('id', self.session.get('ws', ''))
         try:
             errormessage = self.get_argument("error")
         except Exception:
             errormessage = ""
-        import json
         ws = 'cha'
         self.render("html/login.html", ws=ws,
                     errormessage=errormessage, users=json.dumps(get_users()))

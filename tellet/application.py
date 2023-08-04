@@ -2,7 +2,7 @@ from tellet import handlers as h
 import os.path as op
 import tornado.web
 import json
-import logging as log
+from loguru import logger
 
 DEBUG = True
 
@@ -10,7 +10,7 @@ DIRNAME = '/'.join(op.dirname(op.abspath(__file__)).split('/')[:-1])
 STATIC_PATH = op.join(DIRNAME, 'web')
 TEMPLATE_PATH = op.join(DIRNAME, 'web')
 COOKIE_SECRET = 'L8LwECiNRxq2N0N2eGxx9MZlrpmuMEimlydNX/vt1LP='
-print(DIRNAME)
+logger.info(f'{DIRNAME = }')
 global params
 
 class Application(tornado.web.Application):
@@ -25,12 +25,11 @@ class Application(tornado.web.Application):
                  'todo': [],
                  'log': [],
                  'fridge': [],
-                 'pharmacy': [],
-                 'money': []}
-            log.warning('File not found. Created %s' % fp)
+                 'pharmacy': []}
+            logger.warning('File not found. Created %s' % fp)
             json.dump(d, open(fp, 'w'))
         else:
-            log.info('Loaded %s' % fp)
+            logger.success('Loaded %s' % fp)
 
         handlers = [(r"/", h.MainHandler, params),
                     (r"/shopping", h.ShoppingHandler, params),
