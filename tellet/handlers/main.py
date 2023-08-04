@@ -76,6 +76,7 @@ class MainHandler(BaseHandler):
         logger.success(f'JSON contents successfully loaded. ({len(j["log"])} entries)')
         columns = ['ts', 'who', 'action', 'what', 'where']
         df = pd.DataFrame(loglist, columns=columns).set_index('ts')
+        df = df.sort_index(ascending=False)
 
         rp = df.query('action == "did" & where == "reports"')
         logger.info(f'{len(rp)} reports collected.')
