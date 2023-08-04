@@ -1,4 +1,6 @@
+from tellet.handlers.main import MainHandler, My404Handler, DownloadHandler
 from tellet import handlers as h
+from tellet.handlers.list import AddHandler, EditHandler
 import os.path as op
 import tornado.web
 import json
@@ -31,10 +33,11 @@ class Application(tornado.web.Application):
         else:
             logger.success('Loaded %s' % fp)
 
-        handlers = [(r"/", h.MainHandler, params),
+        handlers = [(r"/", MainHandler, params),
+                    (r"/download", DownloadHandler, params),
                     (r"/shopping", h.ShoppingHandler, params),
-                    (r"/add", h.AddHandler, params),
-                    (r"/edit", h.EditHandler, params),
+                    (r"/add", AddHandler, params),
+                    (r"/edit", EditHandler, params),
                     (r"/stats", h.StatsHandler, params),
                     (r"/todo", h.TodoHandler, params),
                     (r"/reports", h.ReportsHandler, params),
@@ -52,5 +55,5 @@ class Application(tornado.web.Application):
             "login_url": "/auth/login"
         }
         tornado.web.Application.__init__(self, handlers,
-                                         default_handler_class=h.My404Handler,
+                                         default_handler_class=My404Handler,
                                          autoescape=None, **s)
