@@ -1,4 +1,4 @@
-from tellet.handlers.main import MainHandler, My404Handler, DownloadHandler
+from tellet.handlers.main import MainHandler, My404Handler, MoneyHandler
 from tellet import handlers as h
 from tellet.handlers.list import AddHandler, EditHandler
 import os.path as op
@@ -34,7 +34,7 @@ class Application(tornado.web.Application):
             logger.success('Loaded %s' % fp)
 
         handlers = [(r"/", MainHandler, params),
-                    (r"/download", DownloadHandler, params),
+                    (r"/money", MoneyHandler, params),
                     (r"/shopping", h.ShoppingHandler, params),
                     (r"/add", AddHandler, params),
                     (r"/edit", EditHandler, params),

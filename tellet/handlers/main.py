@@ -167,34 +167,50 @@ class MainHandler(BaseHandler):
         _initialize(self, **kwargs)
 
 
-class DownloadHandler(BaseHandler):
+class MoneyHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        j = json.load(open(self.session['fp']))
-        loglist = j['log']
-        columns = ['ts', 'who', 'action', 'what', 'where']
-        df = pd.DataFrame(loglist, columns=columns).query('where == "money"')[['who', 'what']]
-        data = []
-        for each in df.itertuples():
-            row = [each.who, *each.what.split(';')]
-            data.append(row)
-        columns = ['who', 'desc', 'amount', 'label', 'ts']
-        df = pd.DataFrame(data, columns=columns)
-        fn = '/tmp/download.xls'
+        action = self.get_argument('action', None)
+        if action == 'download':
+            j = json.load(open(self.session['fp']))
+            loglist = j['log']
+            columns = ['ts', 'who', 'action', 'what', 'where']
+            df = pd.DataFrame(loglist, columns=columns).query('where == "money"')[['who', 'what']]
+            data = []
+            for each in df.itertuples():
+                row = [each.who, *each.what.split(';')]
+                data.append(row)
+            columns = ['who', 'desc', 'amount', 'label', 'ts']
+            df = pd.DataFrame(data, columns=columns)
+            fn = '/tmp/download.xls'
 
-        df.to_excel(fn, index=False, engine="openpyxl")
+            df.to_excel(fn, index=False, engine="openpyxl")
 
-        buf_size = 4096
-        self.set_header('Content-Type', 'application/octet-stream')
-        self.set_header('Content-Disposition', 'attachment; filename='\
-                        + op.basename(fn))
-        with open(fn, 'rb') as f:
-            while True:
-                data = f.read(buf_size)
-                if not data:
-                    break
-                self.write(data)
-        self.finish()
+            buf_size = 4096
+            self.set_header('Content-Type', 'application/octet-stream')
+            self.set_header('Content-Disposition', 'attachment; filename='\
+                            + op.basename(fn))
+            with open(fn, 'rb') as f:
+                while True:
+                    data = f.read(buf_size)
+                    if not data:
+                        break
+                    self.write(data)
+            self.finish()
+        elif action == 'undo':
+            j = json.load(open(self.session['fp']))
+            loglist = list(j['log'])
+            if len(loglist) > 0:
+                loglist2 = [e for e in loglist if e[-1] != 'money']
+                moneylist = [e for e in loglist if e[-1] == 'money']
+                j['log'] = loglist2
+                for e in moneylist[:-1]:
+                    j['log'].append(e)
+                json.dump(j, open(self.session['fp'], 'w'))
+
+            self.write('File was reset successfully.')
+            
+
 
     def initialize(self, **kwargs):
         _initialize(self, **kwargs)

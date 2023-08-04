@@ -25,6 +25,9 @@ class ListHandler():
             data.append(row)
         columns = ['who', 'desc', 'amount', 'label', 'ts']
         df = pd.DataFrame(data, columns=columns)
+        if len(df) == 0:
+            sl = '<div id="itemlist">Liste vide !</div>'
+            return sl
         sl = []
         for row in df.itertuples():
             sl.append(f'''<li class="list-group-item d-flex justify-content-between
