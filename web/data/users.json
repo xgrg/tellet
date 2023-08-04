@@ -2,5 +2,5 @@
                                             ["Poules", "chicken", "chicken"],
                                             ["Bois","wood", "wood"],
                                             ["Courrier", "mailbox", "courrier"],
-                                            ["Roxane", "child", "roxane"]},
+                                            ["Roxane", "child", "roxane"]]},
   "estele":{"users":["John", "Estele"], "reports":[["Anaëlle", "child", "anaelle"]]}}
