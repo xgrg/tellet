@@ -34,7 +34,7 @@ function openMoneyModal() {
       dataType: 'html',
       success: function(data) {
         console.log(data)
-        $("class").html(data)
+        $("div#moneylist").html(data)
       }
     })
   }
