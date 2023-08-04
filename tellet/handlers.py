@@ -56,14 +56,14 @@ def get_color_ndays(n, cutoffs=[7, 15], ascending=True):
 class MainHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        logger.info(f"{self.session = }")
+        logger.info(f"session = {self.session}")
         if 'ws' not in self.session.keys():
             self.clear_cookie("user")
             self.redirect('/auth/')
 
 
         labels = get_users()[self.session['ws']]['users']
-        logger.info(f'{labels = }')
+        logger.info(f'labels = {labels}')
         username = str(self.current_user[1:-1], 'utf-8')
         logger.success(f'\n*** {username} has just logged in.')
 
@@ -73,7 +73,7 @@ class MainHandler(BaseHandler):
         commit = list(repo.iter_commits(max_count=1))[0]
         dt = datetime.fromtimestamp(commit.committed_date)
         version = datetime.strftime(dt, '%Y%m%d-%H%M%S')
-        logger.info(f'{version = }')
+        logger.info(f'version = {version}')
 
         # Select reports
         j = json.load(open(self.session['fp']))
@@ -187,7 +187,7 @@ class ListHandler():
         that_list = j[which_list]
 
         matches = difflib.get_close_matches(what, that_list)
-        logger.info(f'{what =} {that_list =} {matches = }')
+        logger.info(f'what = {what} that_list = {that_list} matches = {matches}')
         dt = datetime.strftime(datetime.now(), '%Y%m%d_%H%M%S')
 
         j = json.load(open(self.session['fp']))

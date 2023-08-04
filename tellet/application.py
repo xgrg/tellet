@@ -10,7 +10,7 @@ DIRNAME = '/'.join(op.dirname(op.abspath(__file__)).split('/')[:-1])
 STATIC_PATH = op.join(DIRNAME, 'web')
 TEMPLATE_PATH = op.join(DIRNAME, 'web')
 COOKIE_SECRET = 'L8LwECiNRxq2N0N2eGxx9MZlrpmuMEimlydNX/vt1LP='
-logger.info(f'{DIRNAME = }')
+logger.info(f'DIRNAME = {DIRNAME}')
 global params
 
 class Application(tornado.web.Application):
