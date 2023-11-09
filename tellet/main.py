@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
@@ -8,13 +8,14 @@ import pandas as pd
 from enum import Enum
 from datetime import datetime
 from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
-templates = Jinja2Templates(directory="templates")
+templates = Jinja2Templates(directory="static")
 
 
 moduledir = Path(tellet.__file__).parent.parent
@@ -86,5 +87,10 @@ async def save():
     return True
 
 
-# @app.get("/shopping")
-# async def shopping():
+@app.get("/shopping", response_class=HTMLResponse)
+async def shopping(request: Request):
+    fp = moduledir / "static" / "html" / "modals" / "fridge.html"
+    modals = open(fp).read()
+    return templates.TemplateResponse(
+        "html/shopping.html", {"request": request, "modals": modals}
+    )

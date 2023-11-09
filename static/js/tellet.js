@@ -48,25 +48,7 @@ function update_quantity(e) {
 }
 
 
-function openShoppingModal() {
-  $('#shoppingAddModal input#textbox').val('')
 
-  options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
-  html = '';
-  options.forEach(function(v) {
-    html += '<option value="' + v + '">';
-  });
-  $('#shoppingAddModal datalist#whattobuy').html(html)
-  $('#shoppingAddModal #delete').hide();
-  $('#shoppingAddModal #add').text('Ajouter')
-  $("#shoppingAddModal h5#itemtitle").text('Ajouter');
-
-  $('#shoppingAddModal #add').prop('disabled', true)
-  $('#shoppingAddModal input#textbox').on('input', function(e) {
-    $('#shoppingAddModal #add').prop('disabled', is_modal_invalid(e.target))
-  })
-  $('#shoppingAddModal').modal('show');
-}
 
 
 function openFridgeModal() {
@@ -362,79 +344,4 @@ function use_fridge(dest) {
   });
 }
 
-
-function click_bought() {
-  data = $(this).parent().parent().text();
-  console.log(data);
-  what = data.split('\n')[1].trim();
-  $("#fridgeAddModal input#textbox").val(what);
-  $("#fridgeAddModal input#quantity").val("");
-  $("#fridgeAddModal input#current_quantity").hide();
-  $("#fridgeAddModal #label_current_quantity").hide();
-  $("#fridgeAddModal input#expirydate").val("");
-  $('#fridgeAddModal #unitpc').click();
-  $("#fridgeAddModal #delete").hide()
-  $('#fridgeAddModal div.form-switch').show();
-  $("#fridgeAddModal input#textbox").parent().hide();
-  $("h5#itemtitle").text(what);
-  $('#fridgeAddModal').modal('show');
-}
-
-
-function click_edit_shopping() {
-  what = $(this).parent().parent().text();
-  what = what.split('\n')[1].trim();
-  console.log(what);
-  $('#shoppingAddModal').attr('data-data', what);
-  $("#shoppingAddModal input#textbox").val(what);
-  $("#shoppingAddModal h5#itemtitle").text('Editer');
-  $("#shoppingAddModal input#textbox").show()
-  $('#shoppingAddModal button#delete').show();
-  $('#shoppingAddModal #add').prop('disabled', false);
-  $('#shoppingAddModal #add').text('Sauvegarder')
-  $('#shoppingAddModal').modal('show');
-}
-
-
-function add_to_shopping_list(to, then) {
-
-  // Collecting details from shoppingAddModal
-  what = $("#shoppingAddModal input#textbox").val();
-  console.log('add ' + what);
-  data = {
-    "what": what,
-    "to": to
-  }
-  action = '/add'
-
-  // If delete is visible, it means we're editing; otherwise we're adding
-  if ($('#shoppingAddModal button#delete').is(":visible")) {
-    item = $("#shoppingAddModal").attr('data-data');
-
-    action = '/edit'
-    data = {
-      "what": what,
-      "to": to,
-      "item": item
-    }
-  }
-
-  $.ajax({
-    type: "POST",
-    url: action,
-    data: data,
-    dataType: 'json',
-    success: function(data) {
-      console.log(data)
-      if (data == false)
-        $('#notfoundModal').modal('show');
-      else
-        update_list(then);
-      return true;
-    },
-    error: function(data) {
-      console.log(data);
-    }
-  });
-}
 
