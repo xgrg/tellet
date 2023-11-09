@@ -41,6 +41,21 @@ class TableName(str, Enum):
     REPORTS = "reports"
 
 
+class AddingEntry(BaseModel):
+    what: str
+    where: TableName
+
+
+class EditingEntry(BaseModel):
+    when: str
+    what: str
+    where: TableName
+
+
+class DeletingEntry(BaseModel):
+    when: str
+
+
 @app.get("/")
 async def root():
     return {"message": "Hello World"}
@@ -54,23 +69,35 @@ async def list(where: TableName) -> list[Entry]:
 
 
 @app.post("/add/")
-async def add(what: str, where: TableName):
+async def add(entry: AddingEntry) -> Entry:
+    global data
     who = "grg"
-    when = datetime.strftime(datetime.now(), "%Y%m%d-%H%M%S")
-    d = {"who": who, "what": what, "where": where.value}
+    when = datetime.strftime(datetime.now(), "entry%Y%m%d%H%M%S")
+    d = {"who": who, "what": entry.what, "where": entry.where.value}
 
     data.loc[when] = d
-    return True
+    data.to_csv(fp)
+
+    return Entry(who=d["who"], what=d["what"], when=when)
 
 
 @app.post("/edit/")
-async def edit(which: str, what: str, where: TableName):
-    return
+async def edit(entry: EditingEntry) -> Entry:
+    global data
+    who = "grg"
+    d = {"who": who, "what": entry.what, "where": entry.where.value}
+
+    data.loc[entry.when] = d
+    data.to_csv(fp)
+    return Entry(who=d["who"], what=d["what"], when=entry.when)
 
 
 @app.post("/delete/")
-async def delete(which: str, where: TableName):
-    return
+async def delete(entry: DeletingEntry) -> DeletingEntry:
+    global data
+    data = data.drop(entry.when)
+    data.to_csv(fp)
+    return DeletingEntry(when=entry.when)
 
 
 @app.post("/undo/")
@@ -83,7 +110,7 @@ async def undo(where: TableName):
 
 @app.get("/save")
 async def save():
-    data.to_csv(fp, index=False)
+    data.to_csv(fp)
     return True
 
 

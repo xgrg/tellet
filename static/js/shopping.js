@@ -1,60 +1,50 @@
+const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json'
+}
 
+function loadContents(id, res) {
 
-function loadContents(id) {
-    options = {
-        headers: {
-            'Accept': 'application/json'
-        }
+    console.log(res);
+    if (res.length == 0) {
+        res = "Liste vide."
+        $(id).html(res);
+        return
     }
-    fetch("/list/shopping", options).then(res => res.json()).then(function (res) {
-        console.log(res);
-        if (res.length == 0){
-            res = "Liste vide."
-            $(id).html(res);
-            return
-        }
-        html = '<ul class="list-group">'
-        for (i=0 ; i < res.length ; i++){
-            what = res[i].what;
-            when = res[i].when;
-            html += `<li when="${when}" class="list-group-item d-flex justify-content-between align-items-center"> ${what} <span> <span class="badge bg-danger">Editer</span><span class="badge bg-success">Acheté </span></span></li>`
-        }        
-        html = html + "</ul>" 
-        $(id).html(html);    
-    })
+    html = '<ul class="list-group">'
+    for (i = 0; i < res.length; i++) {
+        what = res[i].what;
+        when = res[i].when;
+        html += `<li when="${when}" class="list-group-item d-flex justify-content-between align-items-center"> <span id="${when}">${what}</span> <span> <span class="badge bg-danger">Editer</span><span class="badge bg-success">Acheté </span></span></li>`
+    }
+    html = html + "</ul>"
+    $(id).html(html);
 }
 
 function openShoppingModal() {
     $('#shoppingAddModal input#textbox').val('')
-  
-    options = ['lait', 'fromage', 'chocolat', 'pains précuits'];
+
+    opt = ['lait', 'fromage', 'chocolat', 'pains précuits'];
     html = '';
-    options.forEach(function(v) {
-      html += '<option value="' + v + '">';
+    opt.forEach(function (v) {
+        html += '<option value="' + v + '">';
     });
     $('#shoppingAddModal datalist#whattobuy').html(html)
     $('#shoppingAddModal #delete').hide();
     $('#shoppingAddModal #add').text('Ajouter')
     $("#shoppingAddModal h5#itemtitle").text('Ajouter');
-  
+
     $('#shoppingAddModal #add').prop('disabled', true)
-    $('#shoppingAddModal input#textbox').on('input', function(e) {
-      $('#shoppingAddModal #add').prop('disabled', is_modal_invalid(e.target))
+    $('#shoppingAddModal input#textbox').on('input', function (e) {
+        $('#shoppingAddModal #add').prop('disabled', is_modal_invalid(e.target))
     })
     $('#shoppingAddModal').modal('show');
-  }
-
-function loadContentsModal(){
-
-
 }
 
 
-
-function click_bought() {
-    data = $(this).parent().parent().text();
-    console.log(data);
-    what = data.split('\n')[1].trim();
+function clickedBought() {
+    when = $(this).parent().parent().attr("when")
+    what = $(`#${when}`).text()
     $("#fridgeAddModal input#textbox").val(what);
     $("#fridgeAddModal input#quantity").val("");
     $("#fridgeAddModal input#current_quantity").hide();
@@ -66,15 +56,14 @@ function click_bought() {
     $("#fridgeAddModal input#textbox").parent().hide();
     $("h5#itemtitle").text(what);
     $('#fridgeAddModal').modal('show');
-  }
-  
-  
-  function click_edit() {
-    what = $(this).parent().parent().text();
-    what = what.split('\n')[1].trim();
-    console.log(what);
-    //$('#shoppingAddModal').attr('when', when);
-    $('#shoppingAddModal').attr('what', what;
+}
+
+
+function clickedEdit() {
+    when = $(this).parent().parent().attr("when")
+    what = $(`#${when}`).text()
+    $('#shoppingAddModal').attr('when', when);
+    $('#shoppingAddModal').attr('what', what);
     $("#shoppingAddModal input#textbox").val(what);
     $("#shoppingAddModal h5#itemtitle").text('Editer');
     $("#shoppingAddModal input#textbox").show()
@@ -82,74 +71,78 @@ function click_bought() {
     $('#shoppingAddModal #add').prop('disabled', false);
     $('#shoppingAddModal #add').text('Sauvegarder')
     $('#shoppingAddModal').modal('show');
-  }
-  
-  
-  function add(to) {
-    what = $("#shoppingAddModal input#textbox").val();
-    console.log('add ' + what);
+}
+
+
+function add() {
     data = {
-      "what": what,
-      "to": to
+        "what": $("#shoppingAddModal input#textbox").val(),
+        "where": "shopping"
     }
-    action = '/add'
-  
+    console.log(data);
+    url = '/add'
+
     // If delete is visible, it means we're editing; otherwise we're adding
     if ($('#shoppingAddModal button#delete').is(":visible")) {
-      item = $("#shoppingAddModal").attr('what');
-  
-      action = '/edit'
-      data = {
-        "what": what,
-        "where": to,
-        "item": item
-      }
+        url = '/edit'
+        data = {
+            "what": $("#shoppingAddModal input#textbox").val(),
+            "where": "shopping",
+            "when": $("#shoppingAddModal").attr('when')
+        }
     }
-  
-    $.ajax({
-      type: "POST",
-      url: action,
-      data: data,
-      dataType: 'json',
-      success: function(data) {
-        console.log(data)
-        if (data == false)
-          $('#notfoundModal').modal('show');
-        else
-          update_list(then);
-        return true;
-      },
-      error: function(data) {
-        console.log(data);
-      }
+
+    options = {
+        headers: headers,
+        method: "POST",
+        body: JSON.stringify(data)
+    }
+
+    fetch(url, options).then(res => res.json()).then(function (res) {
+        html = `<li when="${res.when}" class="list-group-item d-flex justify-content-between align-items-center"><span id="${res.when}">${res.what}</span> <span> <span class="badge bg-danger">Editer</span><span class="badge bg-success">Acheté </span></span></li>`
+
+        if (url == "/add") { // Adding it to the frontend as well
+            if ($("#shoppingList ul").length == 0) {
+                $("#shoppingList").html('<ul class="list-group"></ul>')
+            }
+            $("#shoppingList ul").append(html)
+            $("span.bg-danger").click(clickedEdit)
+            $("span.bg-success").click(clickedBought)
+        }
+        else {
+            items = $("#shoppingList ul li");
+
+            $(`#${res.when}`).text(res.what)
+    
+        }
     });
-  }
-  
+}
+
+function remove(elt) {
+    console.log('Removing from shopping: ')
+    data = { when: $(elt).closest('#shoppingAddModal').attr('when') }
+    options = { headers: headers, method: "POST", body: JSON.stringify(data) }
+    fetch("/delete", options).then(function (res) { console.log(res); return res.json(); }).then(function (res) {
+        items = $("#shoppingList ul li");
+        $(`#${res.when}`).parent().remove();        
+    });
+}
 
 
 $(function () {
     $("#openAddModal").click(openShoppingModal);
+    $('#shoppingAddModal #add').click(add);
+    $('#shoppingAddModal #delete').click(function () { remove(this) });
 
-
-    $("span.bg-danger").click(click_edit)
-    $("span.bg-success").click(click_bought)
-
-
-    $('#shoppingAddModal #add').click(function () {
-        add('shopping')
-    });
-
-    $('#shoppingAddModal #delete').click(function () {
-        item = $(this).closest('#shoppingAddModal').attr('data-data');
-        console.log('Removing from shopping: ')
-        console.log(item)
-        call_action('/shopping', item, 'removed');
-    });
+    fetch("/list/shopping", { headers: headers }).then(res => res.json()).then(function (res) {
+        loadContents("#shoppingList", res)
+        $("span.bg-danger").click(clickedEdit)
+        $("span.bg-success").click(clickedBought)
+    })
 
     $('#fridgeAddModal #add').click(function () {
         add_to_fridge("shopping");
     });
-
 
     $("input#unitpc").click(function () {
         $('#quantity').val(100);
@@ -160,6 +153,4 @@ $(function () {
         $('#quantity').val("");
         $('#quantity').prop('disabled', false);
     });
-
-    loadContents("#shoppingList")
 });
