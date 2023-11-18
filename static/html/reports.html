@@ -10,13 +10,11 @@
   <meta name="author" content="">
 
   <title>Tellet</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KyZXEAg3QhqLMpG8r+8fhAXLRk2vvoC2f3B09zVXn8CA5QIVfZOJ3BCsw2P0p/We" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js" integrity="sha384-U1DAWAznBHeqEIlVSCgzq+c9gqGAJn5c/t99JyeKa9xxaYpSvHU5awsuZVVFIhvj" crossorigin="anonymous"></script>
-
-  <link href="css/style.css" rel="stylesheet">
-
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="{{url_for('static', path='js/tellet.js')}}"></script>
+  <script type="text/javascript" src="{{url_for('static', path='js/shopping.js')}}"></script>
 </head>
 
 <body>
@@ -24,10 +22,14 @@
 
     {{reports}}
     <a id="addother" href="/" class="btn btn-danger btn-lg" role="button">
-      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-clipboard-plus" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z" />
-        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
-        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+      <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-clipboard-plus"
+        viewBox="0 0 16 16">
+        <path fill-rule="evenodd"
+          d="M8 7a.5.5 0 0 1 .5.5V9H10a.5.5 0 0 1 0 1H8.5v1.5a.5.5 0 0 1-1 0V10H6a.5.5 0 0 1 0-1h1.5V7.5A.5.5 0 0 1 8 7z" />
+        <path
+          d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+        <path
+          d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
       </svg>
       <br />Autre</a>
     <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
@@ -46,7 +48,8 @@
           <p>
           <div class="form-group">
             <label for="realizedTask">Tâche réalisée</label>
-            <input id="realizedTask" input class="form-control" list="whatyoudid" name="what" placeholder="Tâche réalisée">
+            <input id="realizedTask" input class="form-control" list="whatyoudid" name="what"
+              placeholder="Tâche réalisée">
           </div>
           </p>
           <p>
@@ -62,7 +65,8 @@
           </p>
           <p>
           <div id="duration" class="btn-group" role="group" aria-label="Task duration">
-            <input type="radio" data-value=0 class="btn-check" name="btnradio2" id="btnradio1" autocomplete="off" checked>
+            <input type="radio" data-value=0 class="btn-check" name="btnradio2" id="btnradio1" autocomplete="off"
+              checked>
             <label class="btn btn-outline-primary" for="btnradio1">&lt;1 min</label>
             <input type="radio" data-value=1 class="btn-check" name="btnradio2" id="btnradio2" autocomplete="off">
             <label class="btn btn-outline-primary" for="btnradio2">1-7 min</label>
@@ -88,72 +92,73 @@
         </div>
       </div>
     </div>
-    <script>
-      $("a").click(function(e) {
-        id = $(this).attr('id');
-        e.preventDefault();
+  </div>
+  <script>
+    $("a").click(function (e) {
+      id = $(this).attr('id');
+      e.preventDefault();
 
-        /* Clicking on the big Add button */
-        if (id == "addother") {
-          $('#addModal').modal('show');
-          $("input#realizedTask").val("");
-          $("textarea#taskComments").val("");
-          $("input#realizedTask").parent().show();
-          $("h5#tasktitle").text("");
-
-        }
-      })
-
-      $('a#logout').unbind('click')
-
-      /* Adding to the report list */
-      $('button#addtoreport').click(function() {
-        what = $("input#realizedTask").val();
-        if (what == '') {
-          alert('Please set a correct value');
-          return
-        }
-
-        comments = $("textarea#taskComments").val();
-        comments = comments.replace(/;/g, "-");
-        taskduration = $('#duration input:radio:checked').attr('data-value');
-        taskmood = $('#mood input:radio:checked').attr('data-value');
-
-        what += ";" + taskmood + ";" + taskduration + ";" + comments;
-
-        console.log(what);
-        $.ajax({
-          type: "POST",
-          url: "/add",
-          data: {
-            "what": what,
-            "to": "reports"
-          },
-          dataType: 'json',
-          success: function(data) {
-            console.log(data)
-            return true;
-          },
-          error: function(data) {
-            console.log(data);
-          }
-        });
-      });
-
-      $("img").click(function(e) {
-        console.log('tot')
-        id = $(this).attr('id');
-        val = $(this).attr('data-value');
-        desc = $(this).attr('data-description');
-
+      /* Clicking on the big Add button */
+      if (id == "addother") {
         $('#addModal').modal('show');
+        $("input#realizedTask").val("");
         $("textarea#taskComments").val("");
-        $("input#realizedTask").val(val);
-        $("input#realizedTask").parent().hide();
-        $("h5#tasktitle").text(desc);
+        $("input#realizedTask").parent().show();
+        $("h5#tasktitle").text("");
 
+      }
+    })
+
+    $('a#logout').unbind('click')
+
+    /* Adding to the report list */
+    $('button#addtoreport').click(function () {
+      what = $("input#realizedTask").val();
+      if (what == '') {
+        alert('Please set a correct value');
+        return
+      }
+
+      comments = $("textarea#taskComments").val();
+      comments = comments.replace(/;/g, "-");
+      taskduration = $('#duration input:radio:checked').attr('data-value');
+      taskmood = $('#mood input:radio:checked').attr('data-value');
+
+      what += ";" + taskmood + ";" + taskduration + ";" + comments;
+
+      console.log(what);
+      $.ajax({
+        type: "POST",
+        url: "/add",
+        data: {
+          "what": what,
+          "to": "reports"
+        },
+        dataType: 'json',
+        success: function (data) {
+          console.log(data)
+          return true;
+        },
+        error: function (data) {
+          console.log(data);
+        }
       });
-    </script>
+    });
+
+    $("img").click(function (e) {
+      console.log('tot')
+      id = $(this).attr('id');
+      val = $(this).attr('data-value');
+      desc = $(this).attr('data-description');
+
+      $('#addModal').modal('show');
+      $("textarea#taskComments").val("");
+      $("input#realizedTask").val(val);
+      $("input#realizedTask").parent().hide();
+      $("h5#tasktitle").text(desc);
+
+    });
+  </script>
 </body>
 
 </html>

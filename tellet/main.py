@@ -9,17 +9,16 @@ from enum import Enum
 from datetime import datetime
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
+from loguru import logger
 
+module_dir = Path(tellet.__file__).parent.parent
+fp = module_dir / "data" / "data.csv"
+static_dir = module_dir / "static"
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
-
-templates = Jinja2Templates(directory="static")
-
-
-moduledir = Path(tellet.__file__).parent.parent
-fp = moduledir / "data" / "data.csv"
+templates = Jinja2Templates(directory=static_dir)
 
 columns = ["when", "who", "what", "where"]
 data = pd.DataFrame(columns=columns).set_index("when")
@@ -116,8 +115,48 @@ async def save():
 
 @app.get("/shopping", response_class=HTMLResponse)
 async def shopping(request: Request):
-    fp = moduledir / "static" / "html" / "modals" / "fridge.html"
-    modals = open(fp).read()
+    modals = open(static_dir / "html" / "modals" / "fridge.html").read()
     return templates.TemplateResponse(
         "html/shopping.html", {"request": request, "modals": modals}
+    )
+
+
+@app.get("/reports", response_class=HTMLResponse)
+async def reports(request: Request):
+    global username, session_name
+    username = "grg"
+    logger.info(f"*** {username} is reporting.")
+    # users = get_users()[self.session["ws"]]
+    rep = {}  # users.get("reports", [])
+    default_reports = [
+        ("Passer le pavé", "cleaning", "pavé"),
+        ("Passer l'aspirateur", "vacuum", "aspirateur"),
+        ("Faire une lessive", "washingmachine", "lessive"),
+        ("Piscine", "swimmingpool", "piscine"),
+        ("Nettoyer la douche", "shower", "douche"),
+        ("Nettoyer une surface", "cleaningsurface", "nettoyer"),
+        ("Sortir poubelles", "trashout", "poubelles"),
+        ("(D)étendre le linge", "hangingclothes", "linge"),
+        ("Vider le lave-vaisselle", "dishwasher", "lavevaisselle"),
+        ("Nettoyer WC", "toilet", "wc"),
+        ("Préparer le repas", "cooking", "cuisine"),
+        ("Arroser les plantes", "waterplants", "plantes"),
+    ]
+
+    rep.extend(default_reports)
+    tpl2 = """<p><div class="col-md-6">{buttons}</div></p>"""
+    tpl = """<button type="button" class="btn btn-secondary">
+                <img id="{id}" data-description="{desc}" data-value="{value}" width=75 src="/static/data/icons/{id}.png">
+                </button> """
+    reports = []
+    for desc, id, value in rep:
+        reports.append(tpl.format(id=id, desc=desc, value=value))
+
+    html_reports = ""
+    i = 0
+    while i < len(reports):
+        html_reports += tpl2.format(buttons="".join(reports[i : i + 3]))
+        i += 3
+    return templates.TemplateResponse(
+        "html/reports.html", {"request": request, "reports": reports}
     )
