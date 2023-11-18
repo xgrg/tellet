@@ -45,6 +45,8 @@ function openShoppingModal() {
 function clickedBought() {
     when = $(this).parent().parent().attr("when")
     what = $(`#${when}`).text()
+    $('#fridgeAddModal').attr('when', when);
+    $('#fridgeAddModal').attr('what', what);
     $("#fridgeAddModal input#textbox").val(what);
     $("#fridgeAddModal input#quantity").val("");
     $("#fridgeAddModal input#current_quantity").hide();
@@ -118,13 +120,101 @@ function add() {
     });
 }
 
-function remove(elt) {
+
+function add_to_fridge() {
+    checked = $('#fridgeAddModal input#flexSwitch').is(':checked');
+  
+    if (!checked) { // just remove it, we do not want to add it to fridge
+      what = $("#fridgeAddModal").attr("what");
+      when = $("#fridgeAddModal").attr("when");
+      remove("#shoppingList", when)
+
+      return
+    }
+  
+  
+    // Collecting details from fridgeAddModal
+    what = $("#fridgeAddModal input#textbox").val();
+    if (what == '' | what.indexOf(';') > -1) {
+      $('p#errormsg').html('Intitulé de l\'article invalide.')
+      $('#notfoundModal').modal('show');
+    }
+    q = $("input#quantity").val();
+    if ($("input#current_quantity").is(':visible') == true)
+      q1 = $("input#current_quantity").val();
+    else
+      q1 = q;
+  
+    ed = $("input#expirydate").val(); // skipping date validation
+  
+    unittype = $('#unittype input:radio:checked').attr('data-value');
+    if (q < 0 | q1 < 0 | q == '' | q1 == '') {
+      $('p#errormsg').html('La quantité doit être positive.')
+      $('#notfoundModal').modal('show');
+    } else if (unittype == 'pc' & q1 > 100) {
+      $('p#errormsg').html('Un pourcentage doit être inférieure à 100.')
+      $('#notfoundModal').modal('show');
+    } else {
+      what = what + ';' + q1 + ';' + q + ';' + unittype + ';' + ed;
+      console.log(what);
+      action = '/add'
+      data = {
+        "what": what,
+        "to": dest
+      }
+  
+      // If delete is visible, it means we're editing; otherwise we're adding
+      item = undefined;
+      if ($('#fridgeAddModal #delete').is(":visible")) {
+        item = $("#fridgeAddModal").attr('data-data');
+        action = '/edit'
+        data = {
+          "what": what,
+          "to": dest,
+          "item": item
+        }
+      }
+  
+      if (item != undefined)
+        console.log('* Replacing ' + item + ' in ' + dest + ' with ' + what + ' from ' + then);
+      else
+        console.log('Adding ' + what + ' to ' + dest + ' from ' + then)
+  
+      // Performing query
+      $.ajax({
+        type: "POST",
+        url: action,
+        data: data,
+        dataType: 'json',
+        success: function(data) {
+          console.log(data)
+          if (data == false)
+            $('#notfoundModal').modal('show');
+          else {
+            update_list(then);
+            if (then == 'shopping')
+              call_action('/shopping', what.split(';')[0], 'bought');
+          }
+          return true;
+        },
+        error: function(data) {
+          console.log(data);
+        }
+      });
+    }
+  }
+  
+
+function remove(id, when) {
     console.log('Removing from shopping: ')
-    data = { when: $(elt).closest('#shoppingAddModal').attr('when') }
+    data = { when: when}
     options = { headers: headers, method: "POST", body: JSON.stringify(data) }
     fetch("/delete", options).then(function (res) { console.log(res); return res.json(); }).then(function (res) {
-        items = $("#shoppingList ul li");
-        $(`#${res.when}`).parent().remove();        
+        $(`#${res.when}`).parent().remove();   
+        items = $(id + " ul li");
+        if (items.length == 0) 
+            $(id).html("Liste vide.");   
+        
     });
 }
 
@@ -132,7 +222,7 @@ function remove(elt) {
 $(function () {
     $("#openAddModal").click(openShoppingModal);
     $('#shoppingAddModal #add').click(add);
-    $('#shoppingAddModal #delete').click(function () { remove(this) });
+    $('#shoppingAddModal #delete').click(function(){when = $(this).closest('#shoppingAddModal').attr('when'); remove("#shoppingList", when)});
 
     fetch("/list/shopping", { headers: headers }).then(res => res.json()).then(function (res) {
         loadContents("#shoppingList", res)
@@ -141,7 +231,7 @@ $(function () {
     })
 
     $('#fridgeAddModal #add').click(function () {
-        add_to_fridge("shopping");
+        add_to_fridge();
     });
 
     $("input#unitpc").click(function () {
