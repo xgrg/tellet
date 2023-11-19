@@ -120,6 +120,13 @@ function add() {
     });
 }
 
+function change_add_btn_caption(elt){
+  caption = $('#fridgeAddModal #add').text();
+  if (caption == 'Ajouter')
+    $('#fridgeAddModal #add').text('Acheter (Supprimer de la liste)')
+  else 
+    $('#fridgeAddModal #add').text('Ajouter')
+}
 
 function add_to_fridge() {
     checked = $('#fridgeAddModal input#flexSwitch').is(':checked');
@@ -181,26 +188,23 @@ function add_to_fridge() {
         console.log('Adding ' + what + ' to ' + dest + ' from ' + then)
   
       // Performing query
-      $.ajax({
-        type: "POST",
-        url: action,
-        data: data,
-        dataType: 'json',
-        success: function(data) {
-          console.log(data)
-          if (data == false)
-            $('#notfoundModal').modal('show');
-          else {
-            update_list(then);
-            if (then == 'shopping')
-              call_action('/shopping', what.split(';')[0], 'bought');
-          }
-          return true;
-        },
-        error: function(data) {
-          console.log(data);
+      options = {
+        headers: headers,
+        method: "POST",
+        body: JSON.stringify(data)
+      }
+
+      fetch(action, options).then(res => res.json()).then(function (res){
+        console.log(res)
+        if (res == false)
+          $('#notfoundModal').modal('show');
+        else {
+          update_list(then);
+          if (then == 'shopping')
+            call_action('/shopping', what.split(';')[0], 'bought');
         }
-      });
+        return true;
+      })      
     }
   }
   

@@ -169,8 +169,8 @@ async def shopping(request: Request):
 @app.get("/reports")
 @authenticated
 async def reports(request: Request):
-    current_user = get_current_user(request)
-    workspace = get_current_workspace(request)
+    current_user = await get_current_user(request)
+    workspace = await get_current_workspace(request)
     logger.info(f"*** {current_user} is reporting.")
 
     j = json.load(open(module_dir / "data" / "users.json"))

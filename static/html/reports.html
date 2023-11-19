@@ -14,7 +14,7 @@
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.0/dist/js/bootstrap.bundle.min.js"></script>
   <script type="text/javascript" src="{{url_for('static', path='js/tellet.js')}}"></script>
-  <script type="text/javascript" src="{{url_for('static', path='js/shopping.js')}}"></script>
+  <!-- <script type="text/javascript" src="{{url_for('static', path='js/reports.js')}}"></script> -->
 </head>
 
 <body>
@@ -35,7 +35,7 @@
     <a id="logout" href="/"><button type="button" class="btn btn-warning ribbon">Retour</button></a>
 
   </div>
-  <!-- Modal window: Adding item to shopping list  -->
+  <!-- Modal window: Adding item to report list  -->
   <div id="addModal" class="modal fade" role="dialog">
     <div class="modal-dialog">
       <div class="modal-content">
@@ -93,7 +93,43 @@
       </div>
     </div>
   </div>
+
   <script>
+    const headers = {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    }
+
+    function collect_answers() {
+      comments = $("textarea#taskComments").val();
+      comments = comments.replace(/;/g, "-");
+      taskduration = $('#duration input:radio:checked').attr('data-value');
+      taskmood = $('#mood input:radio:checked').attr('data-value');
+      what += ";" + taskmood + ";" + taskduration + ";" + comments;
+      console.log(`Answers: ${what}`);
+      return what;
+    }
+
+    function add() {
+      if ($("input#realizedTask").val() == '') {
+        alert('Please set a correct value.');
+        return
+      }
+
+      data = { what: collect_answers(), where: "reports" }
+
+      options = {
+        headers: headers,
+        method: "POST",
+        body: JSON.stringify(data)
+      }
+
+      fetch('/add', options).then(res => res.json()).then(function (res) {
+        console.log(res)
+        return true;
+      })
+    }
+
     $("a").click(function (e) {
       id = $(this).attr('id');
       e.preventDefault();
@@ -105,48 +141,15 @@
         $("textarea#taskComments").val("");
         $("input#realizedTask").parent().show();
         $("h5#tasktitle").text("");
-
       }
     })
 
     $('a#logout').unbind('click')
 
     /* Adding to the report list */
-    $('button#addtoreport').click(function () {
-      what = $("input#realizedTask").val();
-      if (what == '') {
-        alert('Please set a correct value');
-        return
-      }
-
-      comments = $("textarea#taskComments").val();
-      comments = comments.replace(/;/g, "-");
-      taskduration = $('#duration input:radio:checked').attr('data-value');
-      taskmood = $('#mood input:radio:checked').attr('data-value');
-
-      what += ";" + taskmood + ";" + taskduration + ";" + comments;
-
-      console.log(what);
-      $.ajax({
-        type: "POST",
-        url: "/add",
-        data: {
-          "what": what,
-          "to": "reports"
-        },
-        dataType: 'json',
-        success: function (data) {
-          console.log(data)
-          return true;
-        },
-        error: function (data) {
-          console.log(data);
-        }
-      });
-    });
+    $('button#addtoreport').click(add);
 
     $("img").click(function (e) {
-      console.log('tot')
       id = $(this).attr('id');
       val = $(this).attr('data-value');
       desc = $(this).attr('data-description');
