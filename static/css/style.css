@@ -1,0 +1,278 @@
+body {
+    font-family: 'Roboto Condensed', sans-serif;
+    margin: 20px;
+    background: #121212;
+    color: #e0e0e0;
+}
+
+#log{
+    max-height: 1.7em;   
+    overflow-y: auto;
+}
+
+h2 {
+    color: #ffffff;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+th, td {
+    border: 1px solid #333;
+    padding: 2px;
+    vertical-align: top;
+    width: 14.2%;
+}
+th {
+    background: #1e1e1e;
+    color: #b0b0b0;
+    font-size: 8pt;
+}
+td {
+    height: 120px;
+    background: #1a1a1a;
+}
+td.today {    
+    background-color: rgb(106, 126, 134); 
+}
+
+.date {
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #90caf9;
+    font-size: 8pt;
+
+}
+.event {
+    background: #263238;
+
+    padding: 4px;
+    margin: 2px 0;
+    border-radius: 4px;
+    font-size: 11pt;
+    color: #e3f2fd;
+}
+
+.tab {
+    display: flex;
+    background-color: #1e1e1e;
+    border: none;
+}
+.tab button {
+    flex: 1;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 12px 16px;
+    transition: background-color 0.2s;
+    font-size: 16px;
+    color: #bbb;
+}
+.tab button:hover {
+    background-color: #2a2a2a;
+    color: #fff;
+}
+.tab button.active {
+    background-color: #333;
+    color: #fff;
+}
+
+/* Dark tab content area */
+.tabcontent {
+    display: none;
+    padding: 10px;
+    background-color: #1e1e1e;
+    border: none;
+    color: #e0e0e0;
+}
+
+.module.clock {
+    zoom:80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 20px auto 30px auto;
+    font-family: 'Roboto Condensed', sans-serif;
+  }
+  
+  #digital-clock {
+
+    font-size: 80px;
+    font-weight: 300;
+    color: var(--color-text-bright);
+    letter-spacing: 2px;
+    text-align: center;
+    font-family: 'Roboto Condensed', sans-serif;
+
+  }
+  
+  .clock-second-digital {
+    font-size: 30px;
+    color: var(--color-text-dimmed);
+    margin-left: 5px;
+  }
+  
+  #digital-date {
+    font-size: 28px;
+    font-weight: 200;
+    color: var(--color-text-dimmed);
+    margin-top: 10px;
+    text-align: center;
+    font-family: 'Roboto Condensed', sans-serif;
+
+  }
+
+  .module.weather {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Roboto Condensed', sans-serif;
+    color: #fff;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 10px;
+    padding: 10px;
+    margin: 20px;
+  }
+  
+  #weather-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  #weather-icon {
+    font-size:40pt;
+    margin-right: 15px;
+    color: #fff;
+  }
+  
+  #weather-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #weather-temperature {
+    font-size: 2em;
+    font-weight: bold;
+  }
+  
+  #weather-summary {
+    font-size: 1.2em;
+  }
+  
+  #weather-location {
+    font-size: 1em;
+    color: #ccc;
+  }
+
+  #weather-wind {
+    display: flex;
+    align-items: center;
+    font-size: 1em;
+    color: #ccc;
+    margin-top: 5px;
+  }
+  
+  #weather-wind i {
+    margin-right: 5px;
+  }
+  
+  .module.todo {
+    background-color: rgba(30, 30, 30, 0.6);
+    color: #fff;
+    font-family: 'Roboto Condensed', sans-serif;
+    padding: 2px;
+    border-radius: 10px;
+    margin: 20px;
+    width:300px;
+}
+
+.module.todo ul {
+    list-style-type: square;
+    padding-left: 20px;
+    max-height: 3.7em;   
+    overflow-y: auto;
+}
+
+.module.todo li {
+    font-size: 12pt;
+    margin-bottom: 5px;
+}
+
+.top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px; /* spacing between columns */
+  }
+  
+  /* Columns */
+  .column {
+    flex: 1; /* equal width */
+  }
+  
+  /* Optionally, limit max-width for clock and weather */
+  .clock-column, .weather-column {
+    max-width: 300px;
+  }
+  
+  /* Center the To-Do list */
+  .todo-column {
+    display: flex;
+    justify-content: center;
+  }
+  
+  /* Clock styling */
+  .module.clock {
+    font-family: 'Roboto', sans-serif;
+    color: #fff;
+    text-align: center;
+  }
+
+  #toggle-calendar-btn {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    cursor: pointer;
+    margin: 5px;
+}
+#toggle-calendar-btn:hover {
+    color: #007acc;
+}
+
+.mini-calendar {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: center;
+}
+
+.mini-calendar th {
+    background: #263238;
+    color: #e3f2fd;
+    padding: 8px;
+    font-size: 1.1rem;
+}
+
+.mini-calendar td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    vertical-align: top;
+}
+
+.mini-calendar .date {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.mini-calendar .event {
+    background: #263238;
+    color: #e3f2fd;
+    border-radius: 6px;
+    padding: 3px 5px;
+    margin-bottom: 3px;
+}
+
+.mini-calendar .no-event {
+    color: #999;
+    font-style: italic;
+}

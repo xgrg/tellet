@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Welcome home!</title>
+    <link rel="manifest" href="{{ url_for('static', path='/manifest.json') }}">
+    <link href="{{ url_for('static', path='/css/style.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@300;400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons.min.css">
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/weather-icons/2.0.10/css/weather-icons-wind.min.css">
+
+
+    <!-- Refresh every 60 seconds -->
+    <meta http-equiv="refresh" content="3600">
+</head>
+
+<body>
+    <div class="top-row">
+
+        <div class="column clock-column">
+            <!-- Clock Section -->
+            <div class="module clock">
+                <div id="digital-clock">
+                    <span class="clock-hour-digital"></span>:<span class="clock-minute-digital"></span>
+                    <span class="clock-second-digital"></span>
+                </div>
+                <div id="digital-date"></div>
+            </div>
+        </div>
+
+        <div class="column todo-column">
+            <!-- To-Do Section -->
+            <div class="module todo">
+                {% if tasks %}
+                <ul>
+                    {% for task in tasks %}
+                    <li>{{ task }}</li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>No tasks for now!</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="column">
+		<span id="toggle-calendar-btn" style="border: darksalmon 1px solid;">&nbsp;&nbsp;&nbsp;</span>
+        </div>
+        <div class="column weather-column">
+            <!-- Weather Section -->
+            <div class="module weather">
+                <div id="weather-container">
+                    <div id="weather-icon" class="wi"></div>
+                    <div id="weather-info">
+                        <div id="weather-temperature"></div>
+                        <div id="weather-summary"></div>
+                        <div id="weather-wind"></div>
+                        <div id="weather-location"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div id="calendar-container">
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Lun</th>
+                    <th>Mar</th>
+                    <th>Mer</th>
+                    <th>Jeu</th>
+                    <th>Ven</th>
+                    <th>Sam</th>
+                    <th>Dim</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in weeks %}
+                {% set outer_loop = loop %}
+                <tr>
+                    {% for day in week %}
+                    <td class="{% if day.date.date() == current_date %}today{% endif %}">
+                        <div class="date">
+                            {% if (outer_loop.first and loop.first) or day.date.day == 1 %}
+                            {{ day.date.strftime("%b") }}
+                            {% endif %}
+                            {{ day.date.day }}
+                        </div>
+                        {% for event in day.events %}
+                        <div class="event"
+                            style="background: {{ event.color[0] or '#263238' }}; color: {{ event.color[1] or '#e3f2fd' }}">
+                            {{ event.summary }}
+                        </div>
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    </div>
+    <div id="blank-div" style="display: none;">
+        <table class="mini-calendar">
+            <thead>
+                <tr>
+                    <th colspan="4">Prochains mercredis</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in wednesdays %}
+                <tr>
+                    {% for day in week %}
+                    <td class="{% if day.date.date() == current_date %}today{% endif %}">
+                        <div class="date">
+                            {{ day.date.strftime("%a %d %b") }}
+                        </div>
+                        {% if day.events %}
+                            {% for event in day.events %}
+                                <div class="event" style="background-color: coral;">
+                                    {{ event.summary }}
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="no-event">Aucun événement</div>
+                        {% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        
+    </div>
+
+    <pre id="log"></pre>
+    <script>
+        document.getElementById("toggle-calendar-btn").addEventListener("click", function () {
+            const calendar = document.getElementById("calendar-container");
+            const blank = document.getElementById("blank-div");
+
+            if (calendar.style.display === "none") {
+                // Réaffiche le calendrier, cache le div vierge
+                calendar.style.display = "block";
+                blank.style.display = "none";
+            } else {
+                // Cache le calendrier, montre le div vierge
+                calendar.style.display = "none";
+                blank.style.display = "block";
+            }
+        });
+
+
+        (function () {
+            const oldLog = console.log;
+            console.log = function (...args) {
+                oldLog.apply(console, args);
+                document.getElementById('log').textContent += args.join(' ') + '\n';
+            };
+        })();
+        console.log("Console ready");
+
+        function updateClock() {
+            const now = new Date();
+
+            // Time
+            const h = now.getHours().toString().padStart(2, '0');
+            const m = now.getMinutes().toString().padStart(2, '0');
+            const s = now.getSeconds().toString().padStart(2, '0');
+
+            document.querySelector(".clock-hour-digital").textContent = h;
+            document.querySelector(".clock-minute-digital").textContent = m;
+            document.querySelector(".clock-second-digital").textContent = s;
+
+            // Date
+            const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+            document.getElementById("digital-date").textContent = now.toLocaleDateString(undefined, options);
+        }
+
+        function cardinalWindDirection(windDir) {
+            if (windDir > 11.25 && windDir <= 33.75) {
+                return "NNE";
+            } else if (windDir > 33.75 && windDir <= 56.25) {
+                return "NE";
+            } else if (windDir > 56.25 && windDir <= 78.75) {
+                return "ENE";
+            } else if (windDir > 78.75 && windDir <= 101.25) {
+                return "E";
+            } else if (windDir > 101.25 && windDir <= 123.75) {
+                return "ESE";
+            } else if (windDir > 123.75 && windDir <= 146.25) {
+                return "SE";
+            } else if (windDir > 146.25 && windDir <= 168.75) {
+                return "SSE";
+            } else if (windDir > 168.75 && windDir <= 191.25) {
+                return "S";
+            } else if (windDir > 191.25 && windDir <= 213.75) {
+                return "SSW";
+            } else if (windDir > 213.75 && windDir <= 236.25) {
+                return "SW";
+            } else if (windDir > 236.25 && windDir <= 258.75) {
+                return "WSW";
+            } else if (windDir > 258.75 && windDir <= 281.25) {
+                return "W";
+            } else if (windDir > 281.25 && windDir <= 303.75) {
+                return "WNW";
+            } else if (windDir > 303.75 && windDir <= 326.25) {
+                return "NW";
+            } else if (windDir > 326.25 && windDir <= 348.75) {
+                return "NNW";
+            } else {
+                return "N";
+            }
+        }
+
+        async function fetchWeather() {
+            const latitude = 42.51466;  // Replace with your latitude
+            const longitude = 2.69626;  // Replace with your longitude
+
+            var url = "https://api.open-meteo.com/v1/forecast"
+                + "?latitude=" + latitude
+                + "&longitude=" + longitude
+                + "&current_weather=true"
+                + "&windspeed_unit=kmh";
+
+            var xhr = new XMLHttpRequest();
+            //xhr.open("GET", "/proxy-weather", true);
+            xhr.open("GET", "/proxy-weather?lat=" + latitude + "&lon=" + longitude, true);
+
+
+            xhr.onreadystatechange = function () {
+                console.log(xhr.status)
+
+                if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        try {
+                            var data = JSON.parse(xhr.responseText);
+                            const weather = data;
+                            const temperature = weather.temperature;
+                            const weatherCode = weather.weathercode;
+                            const windSpeed = weather.windspeed;
+                            const windDir = weather.winddirection;
+
+                            // Set weather icon based on weather code
+                            const iconMap = {
+                                0: 'wi-day-sunny',
+                                1: 'wi-day-sunny-overcast',
+                                2: 'wi-cloudy',
+                                3: 'wi-cloudy',
+                                45: 'wi-fog',
+                                48: 'wi-fog',
+                                51: 'wi-sprinkle',
+                                53: 'wi-sprinkle',
+                                55: 'wi-rain',
+                                56: 'wi-sleet',
+                                57: 'wi-sleet',
+                                61: 'wi-rain',
+                                63: 'wi-rain',
+                                65: 'wi-rain',
+                                66: 'wi-sleet',
+                                67: 'wi-sleet',
+                                71: 'wi-snow',
+                                73: 'wi-snow',
+                                75: 'wi-snow',
+                                77: 'wi-snow',
+                                80: 'wi-showers',
+                                81: 'wi-showers',
+                                82: 'wi-showers',
+                                85: 'wi-snow',
+                                86: 'wi-snow',
+                                95: 'wi-thunderstorm',
+                                96: 'wi-thunderstorm',
+                                99: 'wi-thunderstorm'
+                            };
+
+
+                            const icon = iconMap[weatherCode] || 'wi-day-sunny';
+
+                            document.getElementById('weather-icon').className = `wi ${icon} wi-2x`;
+                            document.getElementById('weather-wind').textContent = `${windSpeed} km/h ${cardinalWindDirection(windDir)}`;
+                            document.getElementById('weather-temperature').textContent = `${temperature}°C`;
+                            document.getElementById('weather-location').textContent = `Taillet, FR`; // Replace with actual location if desired
+                        } catch (e) {
+                            console.error("Weather parse error:", e);
+                            document.getElementById("weather").innerHTML = "Weather unavailable";
+                        }
+                    } else {
+                        console.error("Weather request failed:", xhr.status);
+                        document.getElementById("weather").innerHTML = "Weather unavailable";
+                    }
+                }
+            };
+            xhr.send();
+        }
+
+
+        window.onload = function () {
+            setInterval(updateClock, 1000);
+            updateClock();
+            // Fetch weather data every 10 minutes
+            setInterval(fetchWeather, 600000);
+            fetchWeather(); // Initial fetch
+
+        }
+        document.addEventListener("DOMContentLoaded", function () {
+            var el = document.getElementById("tab-dashboard");
+            if (el) {
+                // small delay to give old browsers time to layout
+                setTimeout(function () {
+                    el.scrollIntoView(true);
+                }, 1000);
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,49 @@
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Edit To-Do List</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background: #111;
+            color: #fff;
+            font-family: 'Roboto', sans-serif;
+            padding: 20px;
+        }
+        textarea {
+            width: 100%;
+            max-width: 600px;
+            font-size: 1.1em;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            background-color: rgba(30, 30, 30, 0.6);
+            color: #fff;
+            resize: vertical;
+        }
+        button {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 1em;
+            font-family: 'Roboto', sans-serif;
+            background-color: #444;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h2>Edit To-Do List</h2>
+    <form action="/save-todo" method="post">
+        <textarea name="content" rows="15" cols="50"
+            placeholder="Enter tasks, one per line">{% if tasks %}{{ tasks|join('\n') }}{% endif %}</textarea>
+        <br>
+        <button type="submit">Save</button>
+    </form>
+</body>
+</html>
