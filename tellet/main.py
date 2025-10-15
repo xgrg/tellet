@@ -18,7 +18,11 @@ from dateutil.rrule import rrulestr
 import locale
 
 
-locale.setlocale(locale.LC_TIME, "fr_FR.iso88591")  # set French locale
+try:
+    locale.setlocale(locale.LC_ALL, "fr_FR.iso88591")  # set French locale
+except locale.Error:
+    locale.setlocale(locale.LC_ALL, "fr_FR.utf8")
+
 
 module_dir = Path(tellet.__file__).parent.parent
 static_dir = module_dir / "static"
@@ -150,6 +154,8 @@ def fetch_upcoming_events(ical_url: str):
             continue
 
         summary = fix_summary(str(component.get("SUMMARY")))
+        colors = get_colors(summary)
+
         dtstart = component.get("DTSTART").dt
         dtend = component.get("DTEND").dt
 
@@ -165,6 +171,11 @@ def fetch_upcoming_events(ical_url: str):
 
         dtstart = normalize(dtstart)
         dtend = normalize(dtend)
+
+        # Adjust all-day end dates (optional)
+        if dtend.time() == datetime.min.time():
+            dtend -= timedelta(microseconds=1)
+
         duration = dtend - dtstart
 
         # Handle EXDATE (exceptions)
@@ -188,20 +199,22 @@ def fetch_upcoming_events(ical_url: str):
                 # Skip excluded dates
                 if occ_start.date() in exdates:
                     continue
-                occ_end = occ_start + duration
+                occ_end = occ_start + duration - timedelta(microseconds=1)
                 events.append(
                     {
                         "summary": summary,
+                        "color": colors,
                         "start": occ_start,
                         "end": occ_end,
                     }
                 )
         else:
-            # Non-recurring event, include if within window
+            # Non-recurring event, include if inside window
             if dtstart < end_window and dtend > start_window:
                 events.append(
                     {
                         "summary": summary,
+                        "color": colors,
                         "start": dtstart,
                         "end": dtend,
                     }
