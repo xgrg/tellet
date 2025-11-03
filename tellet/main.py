@@ -131,6 +131,10 @@ def get_colors(summary):
         return ["#799d74", "#e3f2fd"]
     if summary.isupper():
         return ["#dd6a6a", "e3f2fd"]
+    if "Roxane" in summary:
+        return ['#ffdddd', '#301c1c']
+    if "Therapixel" in summary:
+        return ['#f62ed2', '#e3f2fd']
     return []
 
 
