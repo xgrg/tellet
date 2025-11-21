@@ -16,6 +16,7 @@ from loguru import logger
 from functools import wraps
 from dateutil.rrule import rrulestr
 import locale
+import hashlib
 
 
 try:
@@ -116,8 +117,39 @@ def fix_summary(summary):
     return summary
 
 
+combinations = [
+    ["#8c4a6d", "#fce9f3"],
+    ["#3f6fa0", "#e6f2fc"],
+    ["#7aa37a", "#eef6ee"],
+    ["#c57a7a", "#fdeeee"],
+    ["#a05c2c", "#f7f0ea"],
+    ["#6a5fa3", "#efecfb"],
+    ["#aa5275", "#f7e8ef"],
+    ["#2f7e7e", "#e3f9f9"],
+    ["#b45c8a", "#fae6f3"],
+    ["#5778a1", "#e8f0fa"],
+    ["#ca7930", "#fff3e6"],
+    ["#6b9a6b", "#e9f5ea"],
+    ["#a15d5d", "#f8ecec"],
+    ["#5a7fa8", "#e4eef9"],
+    ["#b35757", "#f6eaea"],
+    ["#7c6bb3", "#f0edf9"],
+    ["#8a3e5e", "#f7e3ee"],
+    ["#4d8c8c", "#e3f6f6"],
+    ["#c06363", "#fbecec"],
+    ["#5b7f9a", "#e8f2fa"],
+]
+
+
+def hash_to_range(s: str, n: int) -> int:
+    """Retourne un entier dans [0, n) à partir d'une chaîne."""
+    h = hashlib.sha256(s.encode("utf-8")).hexdigest()
+    # conversion en entier puis modulo n
+    return int(h, 16) % n
+
+
 def get_colors(summary):
-    if "Cha " in summary or "Cha@" in summary or summary.endswith("Cha"):
+    if "Cha @" in summary:
         return ["#872860", "#e3f2fd"]
     if "✈️" in summary:
         return ["burlywood", "black"]
@@ -132,10 +164,10 @@ def get_colors(summary):
     if summary.isupper():
         return ["#dd6a6a", "e3f2fd"]
     if "Roxane" in summary:
-        return ['#ffdddd', '#301c1c']
+        return ["#ffdddd", "#301c1c"]
     if "Therapixel" in summary:
-        return ['#f62ed2', '#e3f2fd']
-    return []
+        return ["#f62ed2", "#e3f2fd"]
+    return combinations[hash_to_range(summary, len(combinations))]
 
 
 def fetch_upcoming_events(ical_url: str):
