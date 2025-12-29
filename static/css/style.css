@@ -276,3 +276,19 @@ td.today {
     color: #999;
     font-style: italic;
 }
+
+.task-list {
+    list-style: none; /* optionnel */
+    padding: 0;
+}
+
+.task-item {
+    font-size: 80px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.task-item.done {
+    text-decoration: line-through;
+    opacity: 0.5;
+}

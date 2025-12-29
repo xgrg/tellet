@@ -46,7 +46,10 @@
         </div>
         <div class="column">
 		<span id="toggle-calendar-btn" style="border: darksalmon 1px solid;">&nbsp;&nbsp;&nbsp;</span>
+   		<span id="toggle-list-btn" style="border: rgb(42, 119, 143) 1px solid;">&nbsp;&nbsp;&nbsp;</span>
+
         </div>
+        
         <div class="column weather-column">
             <!-- Weather Section -->
             <div class="module weather">
@@ -135,24 +138,46 @@
         </table>
         
     </div>
+    <div id="list-div" style="display: none;">
+        {% if tasks %}
+        <ul class="task-list">
+            {% for task in tasks %}
+            <li class="task-item">{{ task }}</li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No tasks for now!</p>
+        {% endif %}
+        
+    </div>
 
     <pre id="log"></pre>
     <script>
-        document.getElementById("toggle-calendar-btn").addEventListener("click", function () {
+        function toggleCalendar(altDivId) {
             const calendar = document.getElementById("calendar-container");
-            const blank = document.getElementById("blank-div");
+            const altDiv = document.getElementById(altDivId);
 
-            if (calendar.style.display === "none") {
-                // Réaffiche le calendrier, cache le div vierge
-                calendar.style.display = "block";
-                blank.style.display = "none";
-            } else {
-                // Cache le calendrier, montre le div vierge
-                calendar.style.display = "none";
-                blank.style.display = "block";
-            }
+            const isCalendarHidden = calendar.style.display === "none";
+
+            calendar.style.display = isCalendarHidden ? "block" : "none";
+            altDiv.style.display = isCalendarHidden ? "none" : "block";
+        }
+
+        document
+            .getElementById("toggle-calendar-btn")
+            .addEventListener("click", () => toggleCalendar("blank-div"));
+
+        document
+            .getElementById("toggle-list-btn")
+            .addEventListener("click", () => toggleCalendar("list-div"));
+
+        document.addEventListener("DOMContentLoaded", () => {
+            document.querySelectorAll(".task-item").forEach(item => {
+                item.addEventListener("click", () => {
+                    item.classList.toggle("done");
+                });
+            });
         });
-
 
         (function () {
             const oldLog = console.log;
